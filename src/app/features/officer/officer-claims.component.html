@@ -1,7 +1,7 @@
 <section class="page">
   <p class="eyebrow">Claims officer workspace</p>
-  <h1>Incoming claims</h1>
-  <p class="intro">Choose a market to view claims assigned to your staff account.</p>
+  <h1>Claims queue</h1>
+  <p class="intro">Choose a market to load incoming or unassigned claims from the staff API.</p>
 
   <app-dynamic-form-renderer
     [schema]="marketFilterSchema"
@@ -10,34 +10,77 @@
     (validSubmit)="loadClaims($event)">
   </app-dynamic-form-renderer>
 
+  <div class="queue-tabs" role="group" aria-label="Claim queue">
+    <button type="button" class="btn" [class.btn-primary]="queue === 'incoming'" [class.btn-outline-primary]="queue !== 'incoming'" (click)="setQueue('incoming')">Incoming</button>
+    <button type="button" class="btn" [class.btn-primary]="queue === 'unassigned'" [class.btn-outline-primary]="queue !== 'unassigned'" (click)="setQueue('unassigned')">Unassigned</button>
+  </div>
+
   <app-loading [active]="loading"></app-loading>
   <app-error-message [message]="errorMessage"></app-error-message>
 
-  <div class="table-wrap" *ngIf="claims.length > 0">
-    <table class="table align-middle">
-      <thead>
-        <tr>
-          <th>Reference</th>
-          <th>Policy</th>
-          <th>Type</th>
-          <th>Status</th>
-          <th>Incident</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let claim of claims">
-          <td>{{ claim.claimReference }}</td>
-          <td>{{ claim.policyNumber }}</td>
-          <td>{{ claim.claimType }}</td>
-          <td>{{ claim.status }}</td>
-          <td>{{ claim.incidentAtUtc | date:'mediumDate' }}</td>
-          <td><a [routerLink]="['/officer/claims', claim.claimReference]">View</a></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <p *ngIf="!loading && !errorMessage && claims.length === 0" class="empty-state">
-    Enter a market code to load claims.
-  </p>
+  <ng-container *ngIf="marketCode && !loading && !errorMessage">
+    <p class="api-note">
+      Filters and sorting apply to the current API page. The queue contract does not include claimant name, priority, or estimated amount; those fields are shown as unavailable.
+    </p>
+    <div class="filters">
+      <label>Search this page
+        <input class="form-control" [(ngModel)]="searchText" placeholder="Reference or policy number">
+      </label>
+      <label>Status
+        <select class="form-select" [(ngModel)]="statusFilter">
+          <option value="">All statuses</option>
+          <option value="submitted">Submitted</option>
+          <option value="underReview">Under review</option>
+          <option value="awaitingInformation">Awaiting information</option>
+          <option value="assessmentInProgress">Assessment in progress</option>
+          <option value="approved">Approved</option>
+          <option value="declined">Declined</option>
+          <option value="settled">Settled</option>
+          <option value="closed">Closed</option>
+        </select>
+      </label>
+      <label>Category
+        <select class="form-select" [(ngModel)]="categoryFilter">
+          <option value="">All categories</option>
+          <option value="motor">Motor</option>
+          <option value="property">Property</option>
+        </select>
+      </label>
+      <label>Sort page by
+        <select class="form-select" [(ngModel)]="sortBy">
+          <option value="reportedAtUtc">Submission date</option>
+          <option value="incidentAtUtc">Incident date</option>
+          <option value="claimReference">Claim reference</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="table-wrap">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>Claim reference</th><th>Claimant</th><th>Claim type</th><th>Market</th><th>Policy number</th>
+            <th>Incident date</th><th>Submission date</th><th>Status</th><th>Assigned officer</th><th>Priority</th><th>Estimated amount</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let claim of filteredClaims">
+            <td>{{ claim.claimReference }}</td><td>Unavailable</td><td>{{ claim.claimType | titlecase }}</td>
+            <td>{{ claim.marketCode }}</td><td>{{ claim.policyNumber }}</td>
+            <td>{{ claim.incidentAtUtc | date:'mediumDate' }}</td><td>{{ claim.reportedAtUtc | date:'mediumDate' }}</td>
+            <td>{{ claim.status | titlecase }}</td><td>{{ claim.activeOfficerName || 'Unassigned' }}</td>
+            <td>Unavailable</td><td>Unavailable</td>
+            <td><a [routerLink]="['/officer/claims', claim.claimReference]" [queryParams]="{ marketCode: marketCode, page: page, queue: queue }">Review</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p *ngIf="filteredClaims.length === 0" class="empty-state">No claims on this page match these filters.</p>
+    <nav *ngIf="totalCount > 0" class="pagination" aria-label="Claims pages">
+      <button class="btn btn-outline-secondary" type="button" [disabled]="page <= 1" (click)="changePage(page - 1)">Previous</button>
+      <span>Page {{ page }} of {{ pageCount }} · {{ totalCount }} API results</span>
+      <button class="btn btn-outline-secondary" type="button" [disabled]="page >= pageCount" (click)="changePage(page + 1)">Next</button>
+    </nav>
+  </ng-container>
+  <p *ngIf="!marketCode && !loading" class="empty-state">Enter a market code to load claims.</p>
 </section>

@@ -1,0 +1,12 @@
+.page { margin: 0 auto; max-width: 76rem; padding: 2rem 1rem; }
+.eyebrow { color: #657482; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; }
+h1, h2 { color: #173c59; }
+.intro, .api-note { color: #53616e; }
+.scope-form { align-items: end; background: #fff; border: 1px solid #dfe6eb; border-radius: 0.6rem; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); margin: 1.5rem 0; padding: 1.25rem; }
+.scope-form label { display: grid; font-weight: 600; gap: 0.4rem; }
+.scope-form button { justify-self: start; }
+.metric-grid { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); margin: 1.5rem 0; }
+.metric { background: #fff; border: 1px solid #dfe6eb; border-radius: 0.5rem; display: flex; flex-direction: column; gap: 0.6rem; padding: 1rem; }
+.metric span { color: #53616e; }
+.metric strong { color: #173c59; font-size: 1.3rem; }
+.api-note { background: #f3f7fa; margin: 1.5rem 0; padding: 1rem; }

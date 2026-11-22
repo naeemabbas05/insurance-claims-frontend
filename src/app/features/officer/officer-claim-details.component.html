@@ -1,0 +1,112 @@
+<section class="page">
+  <a class="back-link" routerLink="/officer/claims">Back to claims queue</a>
+  <p class="eyebrow">Claims officer workspace</p>
+  <h1>Claim assessment</h1>
+  <app-loading [active]="loading" label="Refreshing claim"></app-loading>
+  <app-error-message [message]="errorMessage"></app-error-message>
+  <p *ngIf="actionMessage" class="alert alert-success" role="status">{{ actionMessage }}</p>
+
+  <ng-container *ngIf="tracking as claim">
+    <section class="overview card-section">
+      <div><span class="label">Claim reference</span><strong>{{ claim.claimReference }}</strong></div>
+      <div><span class="label">Current status</span><strong>{{ claim.status | titlecase }}</strong></div>
+      <div><span class="label">Submitted</span><strong>{{ claim.submittedAtUtc | date:'medium' }}</strong></div>
+    </section>
+
+    <p class="api-note">
+      The claim detail and queue contracts do not return claimant contact, incident description, policy details beyond policy number, documents, priority, or estimated loss. Those values are not available on this screen.
+    </p>
+
+    <section class="card-section">
+      <h2>Claim overview and submitted information</h2>
+      <dl *ngIf="queueItem" class="claim-fields">
+        <dt>Claim type</dt><dd>{{ queueItem.claimType | titlecase }}</dd>
+        <dt>Market</dt><dd>{{ queueItem.marketCode }}</dd>
+        <dt>Policy number</dt><dd>{{ queueItem.policyNumber }}</dd>
+        <dt>Incident date</dt><dd>{{ queueItem.incidentAtUtc | date:'medium' }}</dd>
+        <dt>Assigned officer</dt><dd>{{ queueItem.activeOfficerName || 'Unassigned' }}</dd>
+        <dt>Assignment role</dt><dd>{{ queueItem.activeRole ? (queueItem.activeRole | titlecase) : '—' }}</dd>
+      </dl>
+      <p>The individual claim endpoint returns only reference, status, and submission date. Queue fields are shown when opened from a queue result; claimant details and incident description are not included in the available staff contracts.</p>
+      <p>Claimant information: unavailable from the current officer detail contract.</p>
+      <p>Supporting documents: no document retrieval endpoint is available.</p>
+    </section>
+
+    <section class="card-section">
+      <h2>Assignment</h2>
+      <app-error-message [message]="assignmentError"></app-error-message>
+      <div class="current-assignment" *ngFor="let item of assignments">
+        <span>{{ item.officerName }} · {{ item.role | titlecase }} · {{ item.isActive ? 'Active' : 'Ended' }}</span>
+        <small>{{ item.assignedAtUtc | date:'medium' }}<span *ngIf="item.unassignedAtUtc"> – {{ item.unassignedAtUtc | date:'medium' }}</span></small>
+      </div>
+      <p *ngIf="assignments.length === 0 && !assignmentError">No assignment history returned.</p>
+      <form class="form-grid" (ngSubmit)="assign()">
+        <label>Officer UUID<input class="form-control" name="officerId" [(ngModel)]="officerId" required></label>
+        <label>Assignment role
+          <select class="form-select" name="role" [(ngModel)]="role">
+            <option *ngFor="let option of roles" [value]="option">{{ option | titlecase }}</option>
+          </select>
+        </label>
+        <button class="btn btn-primary" type="submit" [disabled]="pendingAction !== null">Assign officer</button>
+      </form>
+      <form class="form-grid reassign" (ngSubmit)="reassign()">
+        <label>Reassign active assignment to officer UUID<input class="form-control" name="newOfficerId" [(ngModel)]="newOfficerId" required></label>
+        <button class="btn btn-outline-primary" type="submit" [disabled]="pendingAction !== null || !activeAssignmentId">Reassign</button>
+      </form>
+      <p class="small-note">The frontend has no signed-in officer identity or staff directory. Enter an officer UUID; the backend validates permissions and assignment rules.</p>
+    </section>
+
+    <section class="card-section">
+      <h2>Assessment notes and financial assessment</h2>
+      <p class="api-note">Estimated loss is not present in the staff queue or claim detail response. Assessment and recommended settlement amounts are recorded using the backend assessment endpoint.</p>
+      <form class="form-grid" (ngSubmit)="recordAssessment()">
+        <label>Assessed damage amount<input class="form-control" type="number" min="0" step="0.01" name="assessedDamageAmount" [(ngModel)]="assessedDamageAmount" required></label>
+        <label>Recommended settlement amount<input class="form-control" type="number" min="0" step="0.01" name="recommendedSettlementAmount" [(ngModel)]="recommendedSettlementAmount" required></label>
+        <label>Currency code<input class="form-control" name="assessmentCurrency" maxlength="3" [(ngModel)]="assessmentCurrency" required></label>
+        <label class="wide">Findings<textarea class="form-control" rows="4" name="findings" [(ngModel)]="findings" required></textarea></label>
+        <button class="btn btn-primary" type="submit" [disabled]="pendingAction !== null">Record assessment</button>
+      </form>
+    </section>
+
+    <section class="card-section">
+      <h2>Additional information</h2>
+      <article class="request" *ngFor="let request of informationRequests">
+        <p><strong>{{ request.status | titlecase }}</strong> · Due {{ request.dueAtUtc | date:'mediumDate' }}</p>
+        <p>{{ request.question }}</p>
+        <p *ngIf="request.response"><strong>Claimant response:</strong> {{ request.response }}</p>
+      </article>
+      <p *ngIf="informationRequests.length === 0">No information requests were returned.</p>
+      <p class="api-note">Creating an information request requires a claimant UUID. The current claim and staff read APIs do not provide that UUID, and the request contract has no required-document or attachment fields. Request creation is unavailable until the backend exposes the claimant identifier.</p>
+    </section>
+
+    <section class="card-section">
+      <h2>Decision</h2>
+      <p *ngIf="decision?.decision as existingDecision">Existing decision: {{ existingDecision.decisionType | titlecase }} · {{ existingDecision.decisionDate | date:'mediumDate' }} · {{ existingDecision.reason }}</p>
+      <div class="form-grid">
+        <label>Approved amount<input class="form-control" type="number" min="0" step="0.01" name="approvedAmount" [(ngModel)]="approvedAmount"></label>
+        <label>Currency code<input class="form-control" maxlength="3" name="approvalCurrency" [(ngModel)]="approvalCurrency"></label>
+        <label class="wide">Approval reason<textarea class="form-control" rows="3" name="approvalReason" [(ngModel)]="approvalReason"></textarea></label>
+      </div>
+      <div class="action-row">
+        <button class="btn btn-success" type="button" [disabled]="pendingAction !== null" (click)="reviewDecision('approve')">Review approval</button>
+        <button class="btn btn-outline-danger" type="button" [disabled]="pendingAction !== null" (click)="reviewDecision('reject')">Review rejection</button>
+      </div>
+      <label class="reject-reason">Rejection reason<textarea class="form-control" rows="2" name="rejectionReason" [(ngModel)]="rejectionReason"></textarea></label>
+      <div *ngIf="decisionConfirmation" class="confirmation" role="alertdialog" aria-label="Confirm claim decision">
+        <p>Confirm {{ decisionConfirmation }} for claim {{ claim.claimReference }}? The backend will enforce allowed status transitions.</p>
+        <button class="btn btn-primary" type="button" [disabled]="pendingAction !== null" (click)="confirmDecision()">Confirm {{ decisionConfirmation }}</button>
+        <button class="btn btn-link" type="button" (click)="cancelDecision()">Cancel</button>
+      </div>
+      <p class="api-note">Settlement progression needs a payee claimant UUID, which the current read APIs do not return. The settlement endpoint is not offered here until that value can be obtained from an authorized API.</p>
+    </section>
+
+    <section class="card-section">
+      <h2>Claim history</h2>
+      <ol class="timeline"><li *ngFor="let item of history"><strong>{{ item.previousStatus ? (item.previousStatus | titlecase) + ' → ' : '' }}{{ item.newStatus | titlecase }}</strong><span>{{ item.changedAtUtc | date:'medium' }}</span></li></ol>
+      <h3>Assessment and decision audit</h3>
+      <ul class="audit"><li *ngFor="let item of audit"><strong>{{ item.action }}</strong> · {{ item.occurredAtUtc | date:'medium' }}<p *ngIf="item.details">{{ item.details }}</p></li></ul>
+      <p *ngIf="audit.length === 0">No audit events returned.</p>
+    </section>
+    <div class="refresh-row"><button class="btn btn-outline-secondary" type="button" [disabled]="loading || pendingAction !== null" (click)="refresh()">Refresh claim details</button></div>
+  </ng-container>
+</section>

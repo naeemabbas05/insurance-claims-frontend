@@ -2,6 +2,7 @@ import { HttpClientTestingModule, HttpTestingController } from '@angular/common/
 import { TestBed } from '@angular/core/testing';
 import { ClaimsApiService } from './claims-api.service';
 import { ClaimSubmissionRequest } from './claims-api.models';
+import { API_BASE_URL } from './api-config';
 
 describe('ClaimsApiService', () => {
   let service: ClaimsApiService;
@@ -32,7 +33,7 @@ describe('ClaimsApiService', () => {
 
     service.submit(request, 'claim-idempotency-key').subscribe();
 
-    const apiRequest = http.expectOne('/api/v1/claims');
+    const apiRequest = http.expectOne(`${API_BASE_URL}/claims`);
     expect(apiRequest.request.method).toBe('POST');
     expect(apiRequest.request.headers.get('Idempotency-Key')).toBe('claim-idempotency-key');
     expect(apiRequest.request.body).toEqual(request);
