@@ -1,12 +1,13 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { ClaimDetailsComponent } from '../shared-claims/claim-details.component';
+import { OfficerClaimDetailsComponent } from './officer-claim-details.component';
+import { OfficerDashboardComponent } from './officer-dashboard.component';
 import { OfficerClaimsComponent } from './officer-claims.component';
 
 const routes: Routes = [
-  { path: 'dashboard', component: OfficerClaimsComponent, data: { allowedRoles: ['ClaimsOfficer'] } },
+  { path: 'dashboard', component: OfficerDashboardComponent, data: { allowedRoles: ['ClaimsOfficer'] } },
   { path: 'claims', component: OfficerClaimsComponent, data: { allowedRoles: ['ClaimsOfficer'] } },
-  { path: 'claims/:id', component: ClaimDetailsComponent, data: { allowedRoles: ['ClaimsOfficer', 'Manager'] } },
+  { path: 'claims/:id', component: OfficerClaimDetailsComponent, data: { allowedRoles: ['ClaimsOfficer', 'Manager'] } },
   { path: '', pathMatch: 'full', redirectTo: 'dashboard' }
 ];
 

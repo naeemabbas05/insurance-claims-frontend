@@ -45,6 +45,8 @@ Existing user management routes (`/`, `/add`, and `/edit/:id`) remain available.
 
 Claimant submission now guides the user through claim type selection, the shared dynamic form, review, declaration, and the existing claim submission endpoint. My Claims can look up a known reference, and claim details show available status history, decisions, and information requests. Published schema retrieval, document upload, and claimant-wide claim listing are not implemented because the backend has no corresponding endpoints. Dashboard totals, recent claims, and list filters therefore remain unavailable.
 
+The Claims Officer area uses the backend's incoming/unassigned staff queues, assignment history/actions, claim assessment, decision, history, audit, and information-request endpoints. Queue filters/search/sorting apply to the loaded API page. The current API does not return claimant identity/contact, documents, priority, or estimated loss; information-request creation and settlement proposals also require claimant UUIDs unavailable from claim reads. Officer identity and staff directory/authentication integration are not present in this frontend.
+
 ## API integration
 
 `src/app/core/api/api-config.ts` centralizes the versioned API base path. Typed Angular `HttpClient` services integrate these existing endpoints:

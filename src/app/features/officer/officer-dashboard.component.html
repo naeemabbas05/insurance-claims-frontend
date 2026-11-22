@@ -1,0 +1,29 @@
+<section class="page">
+  <p class="eyebrow">Claims officer workspace</p>
+  <h1>Officer dashboard</h1>
+  <p class="intro">Load live market queues and, when known, officer workload from the staff APIs.</p>
+
+  <form class="scope-form" (ngSubmit)="load()">
+    <label>Market code<input class="form-control" name="marketCode" [(ngModel)]="marketCode" required></label>
+    <label>Officer ID (UUID)<input class="form-control" name="officerId" [(ngModel)]="officerId"></label>
+    <button class="btn btn-primary" type="submit" [disabled]="loading">Load dashboard</button>
+  </form>
+  <app-loading [active]="loading"></app-loading>
+  <app-error-message [message]="errorMessage"></app-error-message>
+
+  <section *ngIf="incomingCount !== null" class="metric-grid">
+    <article class="metric"><span>Incoming claims</span><strong>{{ incomingCount }}</strong></article>
+    <article class="metric"><span>Unassigned claims</span><strong>{{ unassignedCount }}</strong></article>
+    <article class="metric"><span>Total assigned to officer</span><strong>{{ workload?.activeClaimCount ?? 'Unavailable' }}</strong></article>
+    <article class="metric"><span>New claims</span><strong>Unavailable</strong></article>
+    <article class="metric"><span>Under assessment</span><strong>Unavailable</strong></article>
+    <article class="metric"><span>Awaiting additional information</span><strong>Unavailable</strong></article>
+    <article class="metric"><span>Awaiting decisions</span><strong>Unavailable</strong></article>
+    <article class="metric"><span>Approved</span><strong>Unavailable</strong></article>
+    <article class="metric"><span>Rejected</span><strong>Unavailable</strong></article>
+  </section>
+  <p class="api-note">
+    The available staff APIs provide incoming/unassigned totals and workload totals by officer ID. They do not expose a dashboard aggregate by claim status; counts are left unavailable rather than inferred from one page of queue results.
+  </p>
+  <a class="btn btn-outline-primary" routerLink="/officer/claims">Open claims queue</a>
+</section>

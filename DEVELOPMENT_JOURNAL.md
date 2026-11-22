@@ -117,4 +117,29 @@
 
 - `npm.cmd run build` succeeds. The initial bundle is 768.73 kB, above the existing 500 kB warning budget and below the 1 MB error budget.
 - Live contract verification succeeded against `http://localhost:5187`. No claimant login, submission, or persistence verification was performed because this frontend contains no claimant authentication/token integration and no claimant credentials were supplied. The acceptance test remains incomplete pending that access.
-- Ticket 4 has not been started.
+- Ticket 4 was not started at the time Ticket 3 was recorded; it was subsequently started after the explicit Ticket 4 request.
+
+## Ticket 4 — Claims officer workbench and assessment
+
+### Live API contract review
+
+- Queried `http://localhost:5187/swagger/v1/swagger.json`; the API exposes `GET /api/v1/staff/claims/incoming`, `GET /api/v1/staff/claims/unassigned`, `GET /api/v1/staff/officers/{officerId}/claims`, `GET /api/v1/staff/officers/{officerId}/workload`, `GET /api/v1/staff/claims/{claimReference}/assignments`, `POST /api/v1/staff/claims/{claimReference}/assignments`, and `POST /api/v1/staff/claims/{claimReference}/assignments/{assignmentId}/reassign`.
+- Existing claim operations include tracking, status history, audit, decision, information-request reads and responses, assessment recording, approval, rejection, information-request creation, and settlement proposal/approval/payment.
+- Queue rows contain only claim reference, policy number, market, claim type, status, incident/submission dates, and active assignment data. They omit claimant identity/contact, priority, and estimated loss. Individual tracking returns reference, status, and submission time. There is no staff directory or current-officer identity API.
+- Information-request creation requires `claimantId`; settlement proposal requires `payeeClaimantId`. Neither is returned by any available claim read. No required-document fields or upload/download API exist. The management report is not used as an officer dashboard source because it is a separate management API.
+- No frontend authentication/token integration exists in this checkout. Officer route `allowedRoles` metadata is descriptive; backend authorization and business rules remain authoritative.
+
+### Changes
+
+- Replaced the officer placeholder dashboard with live incoming and unassigned totals and optional workload lookup by officer UUID. Other status-specific totals are marked unavailable because there is no dashboard aggregate endpoint; a single page is not treated as a global count.
+- Implemented incoming/unassigned queue switching, backend pagination, and page-local search, status/category filters, and sorting. Queue fields absent from the response are visibly unavailable; no claimant or financial data is fabricated.
+- Added a professional officer assessment route with available claim details, assignment history, assignment/reassignment by officer UUID, assessment recording, approval/rejection review and confirmation, decision/audit history, information-request viewing, and post-action refreshes. Responses are displayed from API results without optimistic status changes.
+- Request creation and settlement actions are explicitly unavailable because the backend requires claimant UUIDs not exposed by the read APIs. Required documents, claimant details, priority, estimated loss, and uploaded documents are also unavailable under the current contract.
+- Updated the stale claims API unit assertion to use the configured `API_BASE_URL` rather than a relative URL.
+
+### Verification
+
+- Live status returned `running`; live Swagger was inspected for actual route templates and DTO fields.
+- `npm.cmd run build` succeeds. Initial bundle is 771.26 kB, above the existing 500 kB warning and below the 1 MB error budget.
+- `npm.cmd test -- --watch=false --browsers=ChromeHeadless` passes all 11 existing unit tests. The first run exposed the stale API URL expectation; it was updated and the suite passed on rerun.
+- The officer acceptance test was not run end-to-end: no officer login/token integration or test credentials were supplied, so assignment and decision operations were not submitted to the backend. Persistence remains unverified. Ticket 5 has not been started.

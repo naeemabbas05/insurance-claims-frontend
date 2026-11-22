@@ -38,3 +38,33 @@ h1 {
 .table-wrap {
   overflow-x: auto;
 }
+
+.queue-tabs,
+.filters,
+.pagination {
+  align-items: end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.filters label {
+  display: grid;
+  font-size: 0.9rem;
+  font-weight: 600;
+  gap: 0.35rem;
+  min-width: 11rem;
+}
+
+.api-note {
+  background: #f3f7fa;
+  color: #53616e;
+  line-height: 1.5;
+  padding: 0.85rem 1rem;
+}
+
+.pagination {
+  align-items: center;
+  justify-content: flex-end;
+}
