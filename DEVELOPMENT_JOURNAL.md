@@ -94,4 +94,5 @@
 - `npm run build` succeeds. The initial bundle is 753.75 kB, above the 500 kB warning budget but below the 1 MB error budget.
 - Browser verification confirmed `/form-builder` renders the claim fields and submit button with no schema-authoring controls.
 - The route declares Claimant, Claims Officer, and Manager roles; role metadata remains descriptive because no authorization guard is present in the supplied frontend.
-- API submission could not be verified against a running backend in the browser. The form uses the existing `POST /api/v1/claims` integration and surfaces API responses or errors.
+- The supplied Swagger URL is reachable. Its contract confirms `POST /api/v1/claims`, the existing `ClaimSubmissionRequest` body, `Idempotency-Key` header, and `ClaimSubmissionResponse`.
+- `GET /api/v1/status` returned `running` both directly and through the frontend `/api` proxy. No claim was submitted during verification to avoid creating a test record.

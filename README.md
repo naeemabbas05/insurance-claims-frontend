@@ -62,6 +62,6 @@ No backend API currently reads or writes configurable claim form schemas. Both c
 - The backend has no claimant claims-list endpoint. `/claimant/my-claims` explains this rather than fabricating records or calling a mock API. Claim submission and lookup by known reference are integrated.
 - The backend has no form schema create/read/update/delete, draft/publish/archive, version association, or dynamic-answer submission endpoints. File-upload integration is also unavailable. The frontend therefore renders its current API-aligned schema and submits only the fixed claim DTO; custom schemas cannot be fetched from or persisted to the backend.
 - The legacy user and skill-set services are retained, but their `/api/User` and `/api/SkillSet` endpoints are not provided by the claims backend.
-- The backend Swagger document was not available as a running service during this work; endpoint and DTO contracts were checked against its ASP.NET controller attributes and request/response types. Start the API in Development to view the generated OpenAPI document.
+- The backend Swagger UI is available at `http://localhost:5187/swagger/index.html` when the API is running in Development. The frontend development proxy forwards `/api` requests to `http://localhost:5187`.
 
 See [DEVELOPMENT_JOURNAL.md](./DEVELOPMENT_JOURNAL.md) for implementation and verification notes.
