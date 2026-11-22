@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { ClaimsApiService } from '../../core/api/claims-api.service';
 import { getApiErrorMessage } from '../../core/api/api-error';
@@ -6,6 +7,7 @@ import { ClaimSubmissionResponse } from '../../core/api/claims-api.models';
 import { NotificationService } from '../../Shared/feedback/notification.service';
 import { DynamicFormSchema } from '../../core/forms/form-schema.models';
 import { createClaimSubmissionSchema } from './claim-submission-schema';
+import { ApiTokenService } from '../../core/api/api-token.service';
 
 @Component({
   selector: 'app-claimant-submit',
@@ -16,6 +18,7 @@ import { createClaimSubmissionSchema } from './claim-submission-schema';
 export class ClaimantSubmitComponent {
   readonly formSchema: DynamicFormSchema = createClaimSubmissionSchema();
   readonly journeySteps = ['Claim type', 'Claim details', 'Review and declaration'];
+  formInitialValues: Record<string, unknown> = {};
   selectedClaimType: 'motor' | 'property' | null = null;
   currentStep = 0;
   claimValues: Record<string, unknown> | null = null;
@@ -27,7 +30,8 @@ export class ClaimantSubmitComponent {
   constructor(
     private readonly claimsApi: ClaimsApiService,
     private readonly notifications: NotificationService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly apiToken: ApiTokenService
   ) {}
 
   get isSharedClaimsFormRoute(): boolean {
@@ -39,6 +43,10 @@ export class ClaimantSubmitComponent {
       this.declarationAccepted = false;
     }
     this.selectedClaimType = type;
+    this.formInitialValues = {
+      claimType: type,
+      ...(this.apiToken.verifiedEmail ? { claimantEmail: this.apiToken.verifiedEmail } : {})
+    };
     this.currentStep = 1;
     this.claimValues = null;
   }
@@ -69,14 +77,27 @@ export class ClaimantSubmitComponent {
       return;
     }
 
-    const claimType = values['claimType'];
-    const estimatedLossAmount = values['estimatedLossAmount'];
-    if (
-      (claimType !== 'motor' && claimType !== 'property') ||
-      typeof estimatedLossAmount !== 'number' ||
-      !Number.isFinite(estimatedLossAmount)
-    ) {
-      this.errorMessage = 'The claim form contains invalid values. Review the fields and try again.';
+    const rawClaimType = this.selectedClaimType ?? values['claimType'];
+    const claimType = typeof rawClaimType === 'string' ? rawClaimType.trim().toLowerCase() : '';
+    if (claimType !== 'motor' && claimType !== 'property') {
+      this.errorMessage = 'Choose Motor or Property as the claim type.';
+      return;
+    }
+
+    const estimatedLossAmount = this.numberValue(values['estimatedLossAmount']);
+    if (!Number.isFinite(estimatedLossAmount) || estimatedLossAmount <= 0) {
+      this.errorMessage = 'Enter an estimated loss amount greater than zero.';
+      return;
+    }
+
+    const verifiedEmail = this.apiToken.verifiedEmail;
+    const claimantEmail = this.stringValue(values, 'claimantEmail');
+    if (!verifiedEmail) {
+      this.errorMessage = 'Sign in with a Claimant account that has a verified email address before submitting.';
+      return;
+    }
+    if (claimantEmail.toLowerCase() !== verifiedEmail.toLowerCase()) {
+      this.errorMessage = `Use the verified email address for your signed-in account: ${verifiedEmail}`;
       return;
     }
 
@@ -101,7 +122,9 @@ export class ClaimantSubmitComponent {
         this.loading = false;
       },
       error: (error: unknown) => {
-        this.errorMessage = getApiErrorMessage(error);
+        this.errorMessage = error instanceof HttpErrorResponse && error.status === 403
+          ? 'The API requires a verified Claimant account and a matching claimant email address.'
+          : getApiErrorMessage(error);
         this.loading = false;
       }
     });
@@ -114,5 +137,15 @@ export class ClaimantSubmitComponent {
   private stringValue(values: Record<string, unknown>, key: string): string {
     const value = values[key];
     return typeof value === 'string' ? value.trim() : '';
+  }
+
+  private numberValue(value: unknown): number {
+    if (typeof value === 'number') {
+      return value;
+    }
+    if (typeof value === 'string' && value.trim() !== '') {
+      return Number(value.trim());
+    }
+    return Number.NaN;
   }
 }

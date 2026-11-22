@@ -33,7 +33,7 @@
       </p>
       <app-dynamic-form-renderer
         [schema]="formSchema"
-        [initialValues]="claimValues || { claimType: selectedClaimType }"
+        [initialValues]="claimValues || formInitialValues"
         [previewOnly]="false"
         [submitDisabled]="loading"
         (validSubmit)="review($event)">

@@ -1,11 +1,28 @@
 <div class="app-shell">
   <header class="app-header">
-    <a class="brand" routerLink="/">CHUBB <span>Claims</span></a>
+    <a class="brand" routerLink="/claimant/dashboard">CHUBB <span>Claims</span></a>
     <nav class="workspace-switcher" aria-label="Workspaces">
       <a routerLink="/claimant/dashboard" routerLinkActive="active">Claimant</a>
       <a routerLink="/officer/dashboard" routerLinkActive="active">Claims Officer</a>
       <a routerLink="/management/dashboard" routerLinkActive="active">Management</a>
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="exactLinkActiveOptions">Users</a>
+      <button type="button" class="auth-button" (click)="signIn()">Sign in</button>
+      <button type="button" class="auth-button" (click)="signOut()" *ngIf="apiTokenDraft">Sign out</button>
+      <form class="api-token-form" (ngSubmit)="saveApiToken()">
+        <label class="visually-hidden" for="api-token">Claims API access token</label>
+        <input
+          id="api-token"
+          type="password"
+          name="apiToken"
+          [(ngModel)]="apiTokenDraft"
+          placeholder="Paste access token"
+          autocomplete="off">
+        <button type="submit">Save token</button>
+        <button type="button" class="clear-token" (click)="clearApiToken()" *ngIf="apiTokenDraft">Clear</button>
+      </form>
+      <span class="api-connection" [class.connected]="apiConnectionState === 'connected'" [class.unavailable]="apiConnectionState === 'unavailable'">
+        {{ apiConnectionMessage }}
+      </span>
+      <span class="auth-message" *ngIf="authMessage" role="alert">{{ authMessage }}</span>
     </nav>
   </header>
 

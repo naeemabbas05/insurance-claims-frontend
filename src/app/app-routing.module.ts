@@ -1,17 +1,15 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { DefaultLayoutComponent } from './Layout/default-layout/default-layout.component';
-import { AddComponent } from './user/add/add.component';
-import { UserComponent } from './user/user.component';
+import { AuthCallbackComponent } from './core/api/auth-callback.component';
 
 const routes: Routes = [
+  { path: 'auth/callback', component: AuthCallbackComponent },
   {
     path: '',
     component: DefaultLayoutComponent,
     children: [
-      { path: '', component: UserComponent },
-      { path: 'add', component: AddComponent },
-      { path: 'edit/:id', component: AddComponent },
+      { path: '', pathMatch: 'full', redirectTo: 'claimant/dashboard' },
       {
         path: 'claimant',
         loadChildren: () => import('./features/claimant/claimant.module').then(module => module.ClaimantModule)
