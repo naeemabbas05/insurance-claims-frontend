@@ -1,17 +1,44 @@
 <section class="page">
   <p class="eyebrow">Management workspace</p>
   <h1>Claims overview</h1>
-  <p class="intro">Current claims volume and exposure from the management reporting API.</p>
+  <p class="intro">Claims, workload, aging, and financial exposure from the management reporting API.</p>
 
-  <app-loading [active]="loading"></app-loading>
+  <form class="filters" (ngSubmit)="load()">
+    <label>Market code <input class="form-control" name="marketCode" [(ngModel)]="marketCode" placeholder="All markets"></label>
+    <label>From date <input class="form-control" type="date" name="fromDate" [(ngModel)]="fromDate"></label>
+    <label>To date <input class="form-control" type="date" name="toDate" [(ngModel)]="toDate"></label>
+    <button class="btn btn-primary" type="submit" [disabled]="loading">Apply filters</button>
+  </form>
+  <p class="filter-note">The reporting API accepts market and date filters. Category, status, and officer filters are not available.</p>
+  <app-error-message [message]="filterError"></app-error-message>
+  <app-loading [active]="loading" label="Loading management reports"></app-loading>
   <app-error-message [message]="errorMessage"></app-error-message>
 
-  <div *ngIf="report as summary" class="summary-grid">
-    <article><span>Total claims</span><strong>{{ summary.totalClaims }}</strong></article>
-    <article><span>Unassigned</span><strong>{{ summary.unassignedClaims }}</strong></article>
-    <article><span>Markets covered</span><strong>{{ summary.claimsByMarket.length }}</strong></article>
-    <article><span>Active officers</span><strong>{{ summary.workloadByOfficer.length }}</strong></article>
-  </div>
+  <ng-container *ngIf="report as summary">
+    <div class="summary-grid">
+      <article><span>Total claims</span><strong>{{ summary.totalClaims }}</strong></article>
+      <article><span>Total outstanding claims</span><strong>{{ aging?.totalOpenClaims ?? 'Unavailable' }}</strong></article>
+      <article><span>Unassigned claims</span><strong>{{ summary.unassignedClaims }}</strong></article>
+      <article><span>New (submitted)</span><strong>{{ count('submitted') }}</strong></article>
+      <article><span>Under assessment</span><strong>{{ count('assessmentInProgress') }}</strong></article>
+      <article><span>Awaiting information</span><strong>{{ count('awaitingInformation') }}</strong></article>
+      <article><span>Approved</span><strong>{{ count('approved') }}</strong></article>
+      <article><span>Rejected (declined)</span><strong>{{ count('declined') }}</strong></article>
+      <article><span>Pending decisions</span><strong>Not reported</strong></article>
+    </div>
 
-  <a class="btn btn-outline-primary" routerLink="/management/reports">View reports</a>
+    <section class="panel exposure">
+      <h2>Outstanding estimated exposure</h2>
+      <p>Values remain grouped by currency; no cross-currency total is calculated.</p>
+      <ul *ngIf="outstandingByCurrency.length; else noExposure">
+        <li *ngFor="let exposure of outstandingByCurrency">
+          <span>{{ exposure.currencyCode || 'Currency not specified' }}</span>
+          <strong>{{ exposure.amount | number:'1.2-2' }}</strong>
+        </li>
+      </ul>
+      <ng-template #noExposure><p>No exposure values were returned for this filter.</p></ng-template>
+    </section>
+  </ng-container>
+
+  <a class="btn btn-outline-primary" routerLink="/management/reports">Open detailed reports</a>
 </section>

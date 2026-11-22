@@ -1,53 +1,20 @@
-.page {
-  margin: 0 auto;
-  max-width: 70rem;
-  padding: 2rem 1rem;
-}
-
-.back-link {
-  color: #17496f;
-  display: inline-block;
-  margin-bottom: 1.25rem;
-  text-decoration: none;
-}
-
-h1,
-h2 {
-  color: #173c59;
-}
-
-.report-grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
-}
-
-.report-panel {
-  background: #fff;
-  border: 1px solid #dfe6eb;
-  border-radius: 0.6rem;
-  margin: 1rem 0;
-  padding: 1.25rem;
-}
-
-.metric-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.metric-list li {
-  border-top: 1px solid #e8edf1;
-  display: flex;
-  justify-content: space-between;
-  padding: 0.65rem 0;
-}
-
-.metric-list li:first-child {
-  border-top: 0;
-}
-
-.metric-list span {
-  color: #53616e;
-  text-transform: capitalize;
-}
+.page { margin: 0 auto; max-width: 78rem; padding: 2rem 1rem; }
+.back-link { color: #17496f; display: inline-block; margin-bottom: 1.25rem; text-decoration: none; }
+.eyebrow { color: #657482; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; }
+h1, h2, h3 { color: #173c59; }
+.filters { align-items: end; background: #fff; border: 1px solid #dfe6eb; border-radius: 0.6rem; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); margin: 1.25rem 0 0.75rem; padding: 1rem; }
+.filters label { display: grid; font-weight: 600; gap: 0.4rem; }
+.filters button { justify-self: start; }
+.filter-note, .note { background: #f3f7fa; color: #53616e; line-height: 1.5; padding: 0.8rem 1rem; }
+.report-panel { background: #fff; border: 1px solid #dfe6eb; border-radius: 0.6rem; margin: 1.25rem 0; padding: 1.25rem; }
+.report-panel > h2 { font-size: 1.3rem; }
+.report-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); }
+.chart-panel { border: 1px solid #e4eaee; border-radius: 0.5rem; min-width: 0; padding: 1rem; }
+.chart-panel h3 { font-size: 1.05rem; }
+.metric-list, .bar-list { list-style: none; margin: 0; padding: 0; }
+.metric-list li, .bar-list li { border-top: 1px solid #e8edf1; padding: 0.65rem 0; }
+.metric-list li:first-child, .bar-list li:first-child { border-top: 0; }
+.metric-list li { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; justify-content: space-between; }
+.metric-list span, .bar-list span { color: #53616e; }
+.bar-list li > div { display: flex; gap: 0.75rem; justify-content: space-between; }
+.bar-list progress { accent-color: #1f6b8f; display: block; height: 0.75rem; margin-top: 0.4rem; width: 100%; }
