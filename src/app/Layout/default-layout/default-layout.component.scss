@@ -34,6 +34,50 @@
   gap: 0.35rem;
 }
 
+.api-token-form {
+  align-items: center;
+  display: flex;
+  gap: 0.35rem;
+}
+
+.api-token-form input {
+  border: 1px solid #829aaa;
+  border-radius: 0.3rem;
+  max-width: 12rem;
+  padding: 0.45rem 0.55rem;
+}
+
+.api-token-form button {
+  background: #fff;
+  border: 0;
+  border-radius: 0.3rem;
+  color: #123b5a;
+  padding: 0.45rem 0.55rem;
+}
+
+.auth-button {
+  background: #dceaf3;
+  border: 0;
+  border-radius: 0.3rem;
+  color: #123b5a;
+  padding: 0.45rem 0.6rem;
+}
+
+.api-token-form .clear-token {
+  background: transparent;
+  color: #e8f0f5;
+}
+
+.api-connection {
+  color: #e8f0f5;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.api-connection.connected { color: #b8edcf; }
+.api-connection.unavailable { color: #ffd0c9; }
+.auth-message { color: #ffd0c9; font-size: 0.8rem; }
+
 .workspace-switcher a {
   border-radius: 0.3rem;
   color: #e8f0f5;
@@ -94,6 +138,8 @@
     flex-direction: column;
     gap: 0.5rem;
   }
+
+  .api-token-form { flex-wrap: wrap; }
 
   .app-body {
     grid-template-columns: 1fr;

@@ -45,7 +45,8 @@ export function createClaimSubmissionSchema(): DynamicFormSchema {
     }),
     createStarterField('email', 'claimantEmail', 'Email', {
       required: true,
-      maxLength: 320
+      maxLength: 320,
+      helpText: 'Use the verified email address for your signed-in claimant account.'
     }),
     createStarterField('text', 'claimantPhone', 'Phone', {
       required: true,

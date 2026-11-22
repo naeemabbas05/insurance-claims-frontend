@@ -22,10 +22,13 @@ npm start
 ```
 
 The Angular development server proxies `/api` to `http://localhost:5187`. The backend exposes Swagger at `/swagger` when running in Development.
+The app checks `/api/v1/status` on load and shows whether the API is reachable through the proxy.
 
 ## Environment and API configuration
 
 `src/environments/environment.ts` and `environment.prod.ts` define `claimsApiUrl`. `src/app/core/api/api-config.ts` provides that base URL to typed services. Configure the production URL in the production environment or route `/api/v1` through the hosting reverse proxy. Do not put credentials or tokens in these environment files.
+
+Select **Sign in** to authenticate through the configured OpenID Connect provider. Local development uses Keycloak; start it with the instructions in the backend README. The access token is kept in the current tab's session storage and attached only to claims API requests. You can also paste an externally issued bearer token into the header. Backend authorization remains authoritative.
 
 ## Architecture
 
@@ -42,9 +45,9 @@ The Angular development server proxies `/api` to `http://localhost:5187`. The ba
 - Claims Officer: `/officer/dashboard`, `/officer/claims`, `/officer/claims/:id`
 - Manager: `/management/dashboard`, `/management/reports`
 - Render-only shared claim form: `/form-builder`
-- Legacy user management: `/`, `/add`, `/edit/:id`
+- The root route opens the claimant dashboard.
 
-Routes include descriptive `allowedRoles` metadata. The supplied frontend has no sign-in flow, token store, HTTP auth interceptor, route guard, or user identity provider. Backend authorization remains authoritative; connect the owning identity system before protected workflows can be used in an authenticated deployment. Route metadata by itself does not enforce access.
+Routes include descriptive `allowedRoles` metadata. The frontend uses OpenID Connect authorization code flow with PKCE and has no route guard. Backend authorization remains authoritative; protected operations require a valid token with the expected role and identity claims.
 
 ## Implemented features
 

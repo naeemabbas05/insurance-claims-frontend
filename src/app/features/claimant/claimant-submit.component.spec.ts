@@ -4,6 +4,7 @@ import { of } from 'rxjs';
 import { FeedbackModule } from '../../Shared/feedback/feedback.module';
 import { NotificationService } from '../../Shared/feedback/notification.service';
 import { ClaimsApiService } from '../../core/api/claims-api.service';
+import { ApiTokenService } from '../../core/api/api-token.service';
 import { ClaimSubmissionResponse } from '../../core/api/claims-api.models';
 import { DynamicFormsModule } from '../dynamic-forms/dynamic-forms.module';
 import { ClaimantSubmitComponent } from './claimant-submit.component';
@@ -29,6 +30,7 @@ describe('ClaimantSubmitComponent', () => {
       imports: [DynamicFormsModule, FeedbackModule, RouterTestingModule],
       providers: [
         { provide: ClaimsApiService, useValue: { submit: submitClaim } },
+        { provide: ApiTokenService, useValue: { verifiedEmail: 'avery@example.com' } },
         { provide: NotificationService, useValue: { success: notifySuccess } }
       ]
     }).compileComponents();

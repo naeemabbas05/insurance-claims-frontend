@@ -1,5 +1,9 @@
-import { Component } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { API_BASE_URL } from '../../core/api/api-config';
+import { ApiTokenService } from '../../core/api/api-token.service';
+import { OidcAuthService } from '../../core/api/oidc-auth.service';
 
 @Component({
   selector: 'app-default-layout',
@@ -7,8 +11,7 @@ import { Router } from '@angular/router';
   templateUrl: './default-layout.component.html',
   styleUrls: ['./default-layout.component.scss']
 })
-export class DefaultLayoutComponent {
-  readonly exactLinkActiveOptions = { exact: true };
+export class DefaultLayoutComponent implements OnInit {
   readonly linkActiveOptions = { exact: false };
   private readonly claimantLinks = [
     { label: 'Dashboard', path: '/claimant/dashboard' },
@@ -26,12 +29,59 @@ export class DefaultLayoutComponent {
     { label: 'Claim form', path: '/form-builder' }
   ];
   private readonly formBuilderLinks = [{ label: 'Claim form', path: '/form-builder' }];
-  private readonly userLinks = [
-    { label: 'Users', path: '/' },
-    { label: 'Add user', path: '/add' }
-  ];
+  apiTokenDraft = '';
+  apiConnectionMessage = 'Checking claims API…';
+  apiConnectionState: 'checking' | 'connected' | 'unavailable' = 'checking';
+  authMessage: string | null = null;
 
-  constructor(private readonly router: Router) {}
+  constructor(
+    private readonly router: Router,
+    private readonly http: HttpClient,
+    private readonly apiToken: ApiTokenService,
+    private readonly auth: OidcAuthService
+  ) {
+    this.apiTokenDraft = this.apiToken.token;
+  }
+
+  ngOnInit(): void {
+    this.checkApiConnection();
+  }
+
+  saveApiToken(): void {
+    this.apiToken.save(this.apiTokenDraft);
+    this.apiTokenDraft = this.apiToken.token;
+  }
+
+  signIn(): void {
+    this.authMessage = null;
+    this.auth.beginLogin(this.router.url).catch(error => {
+      this.authMessage = error instanceof Error ? error.message : 'Could not start sign-in.';
+    });
+  }
+
+  signOut(): void {
+    this.auth.logout();
+  }
+
+  clearApiToken(): void {
+    this.apiToken.clear();
+    this.apiTokenDraft = '';
+  }
+
+  checkApiConnection(): void {
+    this.apiConnectionState = 'checking';
+    this.apiConnectionMessage = 'Checking claims API…';
+    this.http.get<{ status?: string }>(`${API_BASE_URL}/status`).subscribe({
+      next: () => {
+        this.apiConnectionState = 'connected';
+        this.apiConnectionMessage = 'Claims API connected';
+      },
+      error: () => {
+        this.apiConnectionState = 'unavailable';
+        this.apiConnectionMessage = 'Claims API unavailable';
+      }
+    });
+  }
 
   get sectionLabel(): string {
     switch (this.activeArea) {
@@ -44,7 +94,7 @@ export class DefaultLayoutComponent {
       case 'form-builder':
         return 'Claim form';
       default:
-        return 'User administration';
+        return 'Claims';
     }
   }
 
@@ -59,11 +109,11 @@ export class DefaultLayoutComponent {
       case 'form-builder':
         return this.formBuilderLinks;
       default:
-        return this.userLinks;
+        return this.claimantLinks;
     }
   }
 
-  get activeArea(): 'claimant' | 'officer' | 'management' | 'form-builder' | 'users' {
+  get activeArea(): 'claimant' | 'officer' | 'management' | 'form-builder' {
     const path = this.router.url;
     if (path.startsWith('/claimant')) {
       return 'claimant';
@@ -77,6 +127,6 @@ export class DefaultLayoutComponent {
     if (path.startsWith('/form-builder')) {
       return 'form-builder';
     }
-    return 'users';
+    return 'claimant';
   }
 }

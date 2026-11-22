@@ -1,34 +1,31 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+import { FormsModule } from '@angular/forms';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { DefaultLayoutComponent } from './Layout/default-layout/default-layout.component';
-import { UserComponent } from './user/user.component';
-import { AddComponent } from './user/add/add.component';
-import { TableComponent } from './Shared/table/table.component';
-import { ButtonComponent } from './Shared/button/button.component';
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { FeedbackModule } from './Shared/feedback/feedback.module';
 import { DynamicFormsModule } from './features/dynamic-forms/dynamic-forms.module';
+import { ApiTokenInterceptor } from './core/api/api-token.interceptor';
+import { AuthCallbackComponent } from './core/api/auth-callback.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     DefaultLayoutComponent,
-    TableComponent,
-    ButtonComponent,
-    UserComponent,
-    AddComponent
+    AuthCallbackComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
+    FormsModule,
     DynamicFormsModule,
     FeedbackModule
   ],
-  providers: [],
+  providers: [{ provide: HTTP_INTERCEPTORS, useClass: ApiTokenInterceptor, multi: true }],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
