@@ -1,51 +1,105 @@
 <section class="page">
   <a class="back-link" routerLink="/management/dashboard">Back to dashboard</a>
+  <p class="eyebrow">Management workspace</p>
   <h1>Claims reports</h1>
+
+  <form class="filters" (ngSubmit)="load()">
+    <label>Market code <input class="form-control" name="marketCode" [(ngModel)]="marketCode" placeholder="All markets"></label>
+    <label>From date <input class="form-control" type="date" name="fromDate" [(ngModel)]="fromDate"></label>
+    <label>To date <input class="form-control" type="date" name="toDate" [(ngModel)]="toDate"></label>
+    <button class="btn btn-primary" type="submit" [disabled]="loading">Apply filters</button>
+  </form>
+  <p class="filter-note">The API supports market and date filters only. Category, status, and assigned-officer filters are not available.</p>
+  <app-error-message [message]="filterError"></app-error-message>
   <app-loading [active]="loading" label="Loading reports"></app-loading>
   <app-error-message [message]="errorMessage"></app-error-message>
 
   <ng-container *ngIf="claims as claimReport">
     <section class="report-panel">
-      <h2>Claims summary</h2>
-      <p>{{ claimReport.totalClaims }} claims · {{ claimReport.unassignedClaims }} unassigned</p>
-      <ul class="metric-list">
-        <li *ngFor="let item of claimReport.claimsByStatus">
-          <span>{{ item.status }}</span><strong>{{ item.count }}</strong>
-        </li>
-      </ul>
+      <h2>Claim distribution</h2>
+      <div class="report-grid">
+        <section class="chart-panel" aria-labelledby="market-title">
+          <h3 id="market-title">By market</h3>
+          <ul class="bar-list" *ngIf="markets.length; else noMarkets">
+            <li *ngFor="let item of markets"><div><span>{{ item.marketCode }}</span><strong>{{ item.count }}</strong></div><progress [value]="item.count" [max]="maxMarketCount" [attr.aria-label]="'Claims in ' + item.marketCode"></progress></li>
+          </ul>
+          <ng-template #noMarkets><p>No market distribution was returned.</p></ng-template>
+        </section>
+        <section class="chart-panel">
+          <h3>By category</h3>
+          <ul class="bar-list" *ngIf="categories.length; else noCategories"><li *ngFor="let item of categories"><div><span>{{ item.type | titlecase }}</span><strong>{{ item.count }}</strong></div><progress [value]="item.count" [max]="maxCategoryCount" [attr.aria-label]="item.type + ' claims'"></progress></li></ul>
+          <ng-template #noCategories><p>No category distribution was returned.</p></ng-template>
+        </section>
+        <section class="chart-panel">
+          <h3>By status</h3>
+          <ul class="bar-list" *ngIf="statuses.length; else noStatuses"><li *ngFor="let item of statuses"><div><span>{{ item.status | titlecase }}</span><strong>{{ item.count }}</strong></div><progress [value]="item.count" [max]="maxStatusCount" [attr.aria-label]="item.status + ' claims'"></progress></li></ul>
+          <ng-template #noStatuses><p>No status distribution was returned.</p></ng-template>
+        </section>
+        <section class="chart-panel">
+          <h3>By officer</h3>
+          <ul class="bar-list" *ngIf="officers.length; else noOfficers">
+            <li *ngFor="let item of officers"><div><span>{{ item.officerName }}</span><strong>{{ item.activeClaimCount }}</strong></div><progress [value]="item.activeClaimCount" [max]="maxOfficerWorkload" [attr.aria-label]="'Active claims for ' + item.officerName"></progress></li>
+          </ul>
+          <ng-template #noOfficers><p>No officer workload was returned.</p></ng-template>
+        </section>
+      </div>
+      <p class="note">Monthly claim counts are not available: the reporting API returns no monthly series or dated claim rows.</p>
+    </section>
+
+    <section class="report-panel">
+      <h2>Performance and aging</h2>
+      <div class="report-grid">
+        <section class="chart-panel" *ngIf="aging as agingReport">
+          <h3>Open claims by age</h3>
+          <p>{{ agingReport.totalOpenClaims }} outstanding claims · as of {{ agingReport.asOfUtc | date:'medium' }}</p>
+          <ul class="metric-list" *ngIf="agingBuckets.length; else noAging"><li *ngFor="let item of agingBuckets"><span>{{ item.bucket }}</span><strong>{{ item.count }}</strong></li></ul>
+          <ng-template #noAging><p>No aging buckets were returned.</p></ng-template>
+        </section>
+        <section class="chart-panel" *ngIf="performance as performanceReport">
+          <h3>Turnaround and pending workload</h3>
+          <ul class="metric-list">
+            <li><span>Average turnaround</span><strong>{{ performanceReport.averageTurnaroundDays | number:'1.0-1' }} days</strong></li>
+            <li><span>Completed</span><strong>{{ performanceReport.completedClaims }}</strong></li>
+            <li><span>Pending</span><strong>{{ performanceReport.claimsPending }}</strong></li>
+            <li><span>Older than 30 days</span><strong>{{ performanceReport.claimsOlderThan30Days }}</strong></li>
+            <li><span>SLA attainment</span><strong>{{ performanceReport.slaAttainmentPercentage | number:'1.0-1' }}%</strong></li>
+          </ul>
+        </section>
+        <section class="chart-panel" *ngIf="sla as slaReport">
+          <h3>SLA</h3>
+          <p>Target: {{ slaReport.targetDays }} days</p>
+          <ul class="metric-list">
+            <li><span>Eligible</span><strong>{{ slaReport.eligibleClaims }}</strong></li>
+            <li><span>Achieved</span><strong>{{ slaReport.achievedClaims }}</strong></li>
+            <li><span>Breached</span><strong>{{ slaReport.breachedClaims }}</strong></li>
+            <li><span>Attainment</span><strong>{{ slaReport.attainmentPercentage | number:'1.0-1' }}%</strong></li>
+          </ul>
+        </section>
+      </div>
+      <p class="note">A separate pending-decisions count is not returned by the reporting API.</p>
+    </section>
+
+    <section class="report-panel">
+      <h2>Financial exposure</h2>
+      <p class="note">Amounts are grouped by currency. No cross-currency totals or conversions are calculated.</p>
+      <div class="report-grid">
+        <section class="chart-panel">
+          <h3>Outstanding estimated exposure</h3>
+          <ul class="metric-list" *ngIf="exposure.length; else noExposure"><li *ngFor="let item of exposure"><span>{{ item.currencyCode || 'Currency not specified' }}</span><strong>{{ item.amount | number:'1.2-2' }}</strong></li></ul>
+          <ng-template #noExposure><p>No outstanding exposure was returned.</p></ng-template>
+        </section>
+        <section class="chart-panel">
+          <h3>Approved amounts</h3>
+          <ul class="metric-list" *ngIf="approvedAmounts.length; else noApproved"><li *ngFor="let item of approvedAmounts"><span>{{ item.currencyCode || 'Currency not specified' }}</span><strong>{{ item.amount | number:'1.2-2' }}</strong></li></ul>
+          <ng-template #noApproved><p>No approved amounts were returned.</p></ng-template>
+        </section>
+        <section class="chart-panel">
+          <h3>Approved but unpaid liability</h3>
+          <ul class="metric-list" *ngIf="approvedUnpaid.length; else noUnpaid"><li *ngFor="let item of approvedUnpaid"><span>{{ item.currencyCode || 'Currency not specified' }}</span><strong>{{ item.amount | number:'1.2-2' }}</strong></li></ul>
+          <ng-template #noUnpaid><p>No approved unpaid liability was returned.</p></ng-template>
+        </section>
+      </div>
+      <p class="note">The API does not provide exposure broken down by market or claim category.</p>
     </section>
   </ng-container>
-
-  <div class="report-grid">
-    <section class="report-panel" *ngIf="aging as agingReport">
-      <h2>Claim aging</h2>
-      <p>{{ agingReport.totalOpenClaims }} open claims</p>
-      <ul class="metric-list">
-        <li *ngFor="let item of agingReport.aging">
-          <span>{{ item.bucket }}</span><strong>{{ item.count }}</strong>
-        </li>
-      </ul>
-    </section>
-
-    <section class="report-panel" *ngIf="performance as performanceReport">
-      <h2>Performance</h2>
-      <ul class="metric-list">
-        <li><span>Completed claims</span><strong>{{ performanceReport.completedClaims }}</strong></li>
-        <li><span>Pending claims</span><strong>{{ performanceReport.claimsPending }}</strong></li>
-        <li><span>Average turnaround</span><strong>{{ performanceReport.averageTurnaroundDays | number:'1.0-1' }} days</strong></li>
-        <li><span>SLA attainment</span><strong>{{ performanceReport.slaAttainmentPercentage | number:'1.0-1' }}%</strong></li>
-      </ul>
-    </section>
-
-    <section class="report-panel" *ngIf="sla as slaReport">
-      <h2>SLA</h2>
-      <p>Target: {{ slaReport.targetDays }} days</p>
-      <ul class="metric-list">
-        <li><span>Eligible</span><strong>{{ slaReport.eligibleClaims }}</strong></li>
-        <li><span>Achieved</span><strong>{{ slaReport.achievedClaims }}</strong></li>
-        <li><span>Breached</span><strong>{{ slaReport.breachedClaims }}</strong></li>
-        <li><span>Attainment</span><strong>{{ slaReport.attainmentPercentage | number:'1.0-1' }}%</strong></li>
-      </ul>
-    </section>
-  </div>
 </section>

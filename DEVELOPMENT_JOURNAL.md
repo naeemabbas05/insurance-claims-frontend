@@ -143,3 +143,33 @@
 - `npm.cmd run build` succeeds. Initial bundle is 771.26 kB, above the existing 500 kB warning and below the 1 MB error budget.
 - `npm.cmd test -- --watch=false --browsers=ChromeHeadless` passes all 11 existing unit tests. The first run exposed the stale API URL expectation; it was updated and the suite passed on rerun.
 - The officer acceptance test was not run end-to-end: no officer login/token integration or test credentials were supplied, so assignment and decision operations were not submitted to the backend. Persistence remains unverified. Ticket 5 has not been started.
+
+## Ticket 5 — Management reporting and final quality
+
+### Live API contract review
+
+- Rechecked live Swagger for the existing `GET /api/v1/management/reports/claims`, `/aging`, `/performance`, and `/sla` endpoints. All accept optional `marketCode`, `fromDate`, and `toDate`; category, status, and officer filters are not supported.
+- Claims reporting supplies totals, unassigned counts, status/market/type distributions, active workload by officer, and aggregate financial amounts grouped by currency. Aging, performance, and SLA endpoints supply open-claim aging buckets, turnaround/pending metrics, and SLA figures.
+- The report DTO contains no monthly series, no financial exposure breakdown by market or category, and no pending-decision aggregate. Financial values remain grouped by currency; no conversion or cross-currency sum is calculated.
+- Read-only unauthenticated checks returned HTTP 401 for management reports and staff queue routes. The backend is enforcing authentication. No frontend authentication/identity integration or credentials are available for role-authenticated checks.
+
+### AI-assisted engineering decisions and changes
+
+- Based on the Ticket 5 request, inspected actual Swagger paths and DTOs before changing dashboards. Metrics and charts are bound to report values only; unsupported dimensions are labelled unavailable instead of derived from incomplete rows.
+- Added management market/date filters, accessible distribution bars for markets/categories/statuses/officer workloads, aging/performance/SLA sections, and per-currency exposure/approved liability lists.
+- Added management dashboard counts from API status totals and open-claim aging. “Pending decisions” remains unavailable because it is not a reporting DTO field.
+- Corrected both development and production claims API URLs to relative `/api/v1`; development calls now pass through the configured `/api` proxy. Verified `GET http://localhost:4300/api/v1/status` returns `running` through that proxy.
+- Removed unused `@angular/cdk` and `@angular/animations` dependencies after repository-wide import checks; refreshed npm metadata through `npm uninstall`.
+- Replaced the README with project overview, stack, installation, environment/API configuration, architecture, roles/routes, features, endpoints, and backend limitations.
+- Captured portal screenshots under `artifacts/screenshots/` for claimant dashboard/submission, officer dashboard/queue, and management dashboard/reports. API-backed views are unauthenticated because no login integration is present.
+
+### Final verification
+
+- `npm.cmd run build` passes after final changes. Initial bundle is 768.13 kB, above the configured 500 kB warning threshold and below the 1 MB error threshold.
+- `npm.cmd test -- --watch=false --browsers=ChromeHeadless` passes all 11 existing tests. The first sandboxed Chrome launch failed; rerunning Headless Chrome outside the sandbox completed the suite successfully.
+- `git diff --check` reports no whitespace errors. `npm ls --depth=0` completed; unused `@angular/cdk` and `@angular/animations` were removed.
+- API checks: live Swagger is readable; `GET /api/v1/status` returns `running`; the development `/api/v1/status` proxy returns `running`; unauthenticated report and staff queue calls return 401. These verify routing and backend authentication enforcement, not authorized business operations.
+- Captured six portal screenshots in `artifacts/screenshots/`. The claimant/officer/management workspaces render; protected API panels remain in loading or unauthenticated states because no app login/token integration exists. Screenshots do not demonstrate authenticated data.
+- Authenticated integration, role-specific authorized-route checks, and full claimant/officer/management workflow persistence checks could not run without identity-provider integration and test credentials. Document upload, claimant list/published forms, officer claimant-UUID operations, and unsupported report dimensions remain backend gaps described above.
+- Git history was reviewed for delivery reporting. No commit was created for the current uncommitted Ticket 5 work.
+- No subsequent ticket was started.

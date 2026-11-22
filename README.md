@@ -1,71 +1,79 @@
 # CHUBB APAC Claims Frontend
 
-Angular foundation for the CHUBB APAC claims-management API. The application preserves the original user-management screens while adding lazy-loaded claimant, claims-officer, and management areas, typed API clients, and shared feedback components.
+Angular frontend for the CHUBB APAC claims-management API. It provides claimant, claims officer, and management workspaces, a shared dynamic form renderer, typed API clients, and reusable loading/error/notification feedback.
 
-## Requirements
+## Technology stack
 
-- Node.js `^22.22.3`, `^24.15.0`, or `>=26.0.0` (required by Angular 22.3)
+- Angular 22.3 with TypeScript 6 and RxJS 7
+- Angular NgModules and lazy-loaded feature areas
+- Bootstrap 5.3
+- Angular `HttpClient` for the existing ASP.NET Core API
+- Jasmine, Karma, and Chrome Headless for unit tests
+
+## Requirements and installation
+
+- Node.js `^22.22.3`, `^24.15.0`, or `>=26.0.0`
 - npm
-- The claims API running locally at `http://localhost:5187` for development API calls
-
-## Run locally
+- Claims API available at `http://localhost:5187` for local integration
 
 ```powershell
 npm ci
 npm start
 ```
 
-The Angular development server proxies `/api` to `http://localhost:5187`. The backend exposes Swagger at `/swagger` only in its Development environment. In production, configure the hosting reverse proxy to route `/api/v1` to the claims API; no production API host is hard-coded.
+The Angular development server proxies `/api` to `http://localhost:5187`. The backend exposes Swagger at `/swagger` when running in Development.
+
+## Environment and API configuration
+
+`src/environments/environment.ts` and `environment.prod.ts` define `claimsApiUrl`. `src/app/core/api/api-config.ts` provides that base URL to typed services. Configure the production URL in the production environment or route `/api/v1` through the hosting reverse proxy. Do not put credentials or tokens in these environment files.
+
+## Architecture
+
+- `src/app/core/api`: typed API models and `HttpClient` services, organized by claims, staff, management, and claimant notifications.
+- `src/app/core/forms` and `src/app/features/dynamic-forms`: shared schema-driven reactive form renderer and validators.
+- `src/app/features/claimant`, `officer`, and `management`: lazy-loaded role workspaces.
+- `src/app/features/shared-claims`: reusable claim tracking/details UI.
+- `src/app/Shared/feedback`: reusable loading, error, and notification components.
+- `src/app/app-routing.module.ts`: application routes and feature loading.
+
+## User roles and routes
+
+- Claimant: `/claimant/dashboard`, `/claimant/submit-claim`, `/claimant/my-claims`, `/claimant/claims/:id`
+- Claims Officer: `/officer/dashboard`, `/officer/claims`, `/officer/claims/:id`
+- Manager: `/management/dashboard`, `/management/reports`
+- Render-only shared claim form: `/form-builder`
+- Legacy user management: `/`, `/add`, `/edit/:id`
+
+Routes include descriptive `allowedRoles` metadata. The supplied frontend has no sign-in flow, token store, HTTP auth interceptor, route guard, or user identity provider. Backend authorization remains authoritative; connect the owning identity system before protected workflows can be used in an authenticated deployment. Route metadata by itself does not enforce access.
+
+## Implemented features
+
+- Claimant: Motor/Property selection, shared dynamic form, review/declaration, fixed-DTO submission, lookup by reference, status history, decision read, and additional-information text responses.
+- Claims Officer: incoming/unassigned queues with backend pagination, page-local search/filter/sort, workload counts where an officer UUID is available, assignment/reassignment, assessment recording, approval/rejection confirmation, and available history/audit reads.
+- Management: claims overview, market/date filters, distribution by market/category/status/officer, claim aging, turnaround/SLA reports, and financial amounts grouped by currency.
+- Shared dynamic forms: text, textarea, number, email, date/date-time, dropdown, multi-select, radio, checkbox, toggle, file validation, and repeatable groups.
+- Shared loading, empty, and error states, responsive layouts, and accessible labels for interactive inputs and charts.
+
+## Existing API endpoints
+
+- Claims: `POST /api/v1/claims`; `GET /api/v1/claims/{claimReference}`; `GET /api/v1/claims/{claimReference}/history`; `GET /api/v1/claims/{claimReference}/decision`; `GET /api/v1/claims/{claimReference}/audit`; `GET` and `POST /api/v1/claims/{claimReference}/information-requests`; `POST /api/v1/claims/{claimReference}/information-requests/{requestId}/responses`; `POST /api/v1/claims/{claimReference}/assessments`; `POST /api/v1/claims/{claimReference}/approval`; `POST /api/v1/claims/{claimReference}/rejection`; settlement operations under `/api/v1/claims/{claimReference}/settlements`.
+- Staff: incoming/unassigned queues and officer workload/claim reads under `/api/v1/staff`; assignment history, assignment, and reassignment under `/api/v1/staff/claims/{claimReference}/assignments`.
+- Management: `GET /api/v1/management/reports/{claims,aging,performance,sla}` with optional `marketCode`, `fromDate`, and `toDate` query parameters.
+- Claimant notifications: `GET /api/v1/claimant/notifications`; `PUT /api/v1/claimant/notifications/{notificationId}/read`.
+
+## API limitations
+
+The backend currently has no claimant claims-list endpoint, published-form retrieval, or document upload/download/attachment APIs. Claim submission accepts a fixed `ClaimSubmissionRequest`, not dynamic schema answers. Tracking only returns reference, status, and submission date.
+
+Officer queue/detail APIs omit claimant identity/contact, priority, estimated loss, and documents. Information-request creation and settlement proposal require claimant UUIDs not returned by claim reads. There is no staff directory or current-officer identity endpoint. Queue search and filters therefore apply only to the loaded API page; management reporting filters are limited to market and date.
+
+Management reports do not expose monthly series, financial exposure by market/category, pending-decision counts, or category/status/officer filters. Financial totals remain grouped by currency; the frontend does not convert or combine currencies without conversion data. No mock backend or fabricated metrics are used.
 
 ## Build and tests
 
 ```powershell
 npm run build
-npm test -- --watch=false
+npm test -- --watch=false --browsers=ChromeHeadless
 ```
 
-The production build uses the current Angular application builder. Some first-party and Bootstrap assets may exceed the existing 500 kB warning budget; the configured 1 MB error budget remains the build failure threshold.
-
-## Application areas
-
-- `/claimant/dashboard`
-- `/claimant/submit-claim`
-- `/claimant/my-claims`
-- `/claimant/claims/:id`
-- `/officer/dashboard`
-- `/officer/claims`
-- `/officer/claims/:id`
-- `/management/dashboard`
-- `/management/reports`
-- `/form-builder` (render-only claim form)
-
-Existing user management routes (`/`, `/add`, and `/edit/:id`) remain available. User create/edit, claimant submission, the officer market filter, and `/form-builder` all use the shared schema-driven Dynamic Forms renderer. It supports text, textarea, number, email, date/date-time, dropdown, multi-select, radio, checkbox, toggle, file, and repeatable-group fields.
-
-`/form-builder` is a render-only claims form route; it has no schema-authoring controls. It renders the claim-submission schema and submits through the same API flow as `/claimant/submit-claim`. The schema is frontend configuration aligned with the API request DTO because the backend does not expose an endpoint to retrieve form schemas. The route's `allowedRoles` metadata documents intended access but is not an authorization guard.
-
-Claimant submission now guides the user through claim type selection, the shared dynamic form, review, declaration, and the existing claim submission endpoint. My Claims can look up a known reference, and claim details show available status history, decisions, and information requests. Published schema retrieval, document upload, and claimant-wide claim listing are not implemented because the backend has no corresponding endpoints. Dashboard totals, recent claims, and list filters therefore remain unavailable.
-
-The Claims Officer area uses the backend's incoming/unassigned staff queues, assignment history/actions, claim assessment, decision, history, audit, and information-request endpoints. Queue filters/search/sorting apply to the loaded API page. The current API does not return claimant identity/contact, documents, priority, or estimated loss; information-request creation and settlement proposals also require claimant UUIDs unavailable from claim reads. Officer identity and staff directory/authentication integration are not present in this frontend.
-
-## API integration
-
-`src/app/core/api/api-config.ts` centralizes the versioned API base path. Typed Angular `HttpClient` services integrate these existing endpoints:
-
-- Claims: `POST /api/v1/claims`; `GET /api/v1/claims/{claimReference}`; claimant decision, information-request, status-history, and lifecycle operations under `/claims/{claimReference}`. Officer audit history is also available at `/claims/{claimReference}/audit`.
-- Claimant notifications: `GET /api/v1/claimant/notifications`; `PUT /api/v1/claimant/notifications/{notificationId}/read`.
-- Officer operations: incoming and unassigned claim pages, officer claim/workload reads, assignment history, assignment, and reassignment under `/api/v1/staff`.
-- Management: claims, aging, performance, and SLA reports under `/api/v1/management/reports`.
-
-Request/response TypeScript contracts are in `src/app/core/api`. The API’s camel-case enum JSON representation is reflected in the frontend types.
-
-No backend API currently reads or writes configurable claim form schemas. Both claim-form routes use the shared renderer and map their answers to the existing fixed `ClaimSubmissionRequest` for `POST /api/v1/claims`. There is no schema fetch, save, publish, version, or archive API, and the frontend does not emulate one.
-
-## Integration gaps
-
-- The supplied Angular project did not contain authentication, JWT storage/handling, role or permission models, guards, or HTTP interceptors. This foundation does not add a competing authentication system. API endpoints still require the existing backend’s JWT and role claims; the frontend must be connected to the owning authentication implementation before protected requests can succeed. Route `allowedRoles` metadata documents intended access only and is not an authorization guard.
-- The backend has no claimant claims-list endpoint. My Claims supports lookup by known reference, but claimant-wide rows, dashboard counts, list filters, sorting, and pagination cannot be populated without that endpoint.
-- The backend has no form schema create/read/update/delete, draft/publish/archive, version association, or dynamic-answer submission endpoints. File-upload integration is also unavailable. The frontend renders its API-aligned schema and submits only the fixed claim DTO; custom schemas and supporting files cannot be fetched or persisted through the current API.
-- The legacy user and skill-set services are retained, but their `/api/User` and `/api/SkillSet` endpoints are not provided by the claims backend.
-- The backend Swagger UI is available at `http://localhost:5187/swagger/index.html` when the API is running in Development. The frontend development proxy forwards `/api` requests to `http://localhost:5187`.
-
-See [DEVELOPMENT_JOURNAL.md](./DEVELOPMENT_JOURNAL.md) for implementation and verification notes.
+The production bundle has an existing 500 kB warning budget and a 1 MB error threshold. See [DEVELOPMENT_JOURNAL.md](./DEVELOPMENT_JOURNAL.md) for ticket decisions and the latest verification record.
