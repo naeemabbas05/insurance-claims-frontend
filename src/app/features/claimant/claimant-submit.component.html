@@ -1,72 +1,21 @@
 <section class="page">
-  <a class="back-link" routerLink="/claimant/dashboard">Back to dashboard</a>
+  <a *ngIf="!isSharedClaimsFormRoute" class="back-link" routerLink="/claimant/dashboard">Back to dashboard</a>
   <h1>Submit a claim</h1>
-  <p class="intro">Provide the incident and policy details. Required fields are marked.</p>
+  <p class="intro">Complete the form to submit your claim.</p>
 
   <app-loading [active]="loading" label="Submitting claim"></app-loading>
   <app-error-message [message]="errorMessage"></app-error-message>
 
   <div *ngIf="submission as result" class="alert alert-success" role="status">
     Claim submitted. Your reference is <strong>{{ result.claimReference }}</strong>.
-    <a [routerLink]="['/claimant/claims', result.claimReference]">View claim</a>
+    <a *ngIf="!isSharedClaimsFormRoute" [routerLink]="['/claimant/claims', result.claimReference]">View claim</a>
   </div>
 
-  <form *ngIf="!submission" [formGroup]="form" (ngSubmit)="submit()" novalidate>
-    <div class="form-grid">
-      <label>
-        Market code *
-        <input class="form-control" formControlName="marketCode" autocomplete="organization">
-      </label>
-      <label>
-        Policy number *
-        <input class="form-control" formControlName="policyNumber">
-      </label>
-      <label>
-        Claim type *
-        <select class="form-select" formControlName="claimType">
-          <option value="motor">Motor</option>
-          <option value="property">Property</option>
-        </select>
-      </label>
-      <label>
-        Incident date and time *
-        <input class="form-control" type="datetime-local" formControlName="incidentAt">
-      </label>
-      <label>
-        Estimated loss *
-        <input class="form-control" type="number" min="0.01" step="0.01" formControlName="estimatedLossAmount">
-      </label>
-      <label>
-        Currency code *
-        <input class="form-control" maxlength="3" formControlName="currencyCode" placeholder="AUD">
-      </label>
-    </div>
-
-    <label class="block-field">
-      Incident description *
-      <textarea class="form-control" rows="4" formControlName="incidentDescription"></textarea>
-    </label>
-
-    <fieldset formGroupName="claimant">
-      <legend>Claimant contact</legend>
-      <div class="form-grid">
-        <label>
-          Full name *
-          <input class="form-control" formControlName="name" autocomplete="name">
-        </label>
-        <label>
-          Email *
-          <input class="form-control" type="email" formControlName="email" autocomplete="email">
-        </label>
-        <label>
-          Phone *
-          <input class="form-control" type="tel" formControlName="phone" autocomplete="tel">
-        </label>
-      </div>
-    </fieldset>
-
-    <button class="btn btn-primary" type="submit" [disabled]="loading">
-      Submit claim
-    </button>
-  </form>
+  <app-dynamic-form-renderer
+    *ngIf="!submission"
+    [schema]="formSchema"
+    [previewOnly]="false"
+    [submitDisabled]="loading"
+    (validSubmit)="submit($event)">
+  </app-dynamic-form-renderer>
 </section>

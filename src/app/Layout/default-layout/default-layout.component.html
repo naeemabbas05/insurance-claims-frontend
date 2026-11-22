@@ -5,7 +5,7 @@
       <a routerLink="/claimant/dashboard" routerLinkActive="active">Claimant</a>
       <a routerLink="/officer/dashboard" routerLinkActive="active">Claims Officer</a>
       <a routerLink="/management/dashboard" routerLinkActive="active">Management</a>
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Users</a>
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="exactLinkActiveOptions">Users</a>
     </nav>
   </header>
 
@@ -16,7 +16,7 @@
         *ngFor="let link of sectionLinks"
         [routerLink]="link.path"
         routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: false }">
+        [routerLinkActiveOptions]="linkActiveOptions">
         {{ link.label }}
       </a>
     </aside>

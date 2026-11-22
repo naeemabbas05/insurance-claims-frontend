@@ -23,6 +23,10 @@ const routes: Routes = [
       {
         path: 'management',
         loadChildren: () => import('./features/management/management.module').then(module => module.ManagementModule)
+      },
+      {
+        path: 'form-builder',
+        loadChildren: () => import('./features/form-builder/form-builder-feature.module').then(module => module.FormBuilderFeatureModule)
       }
     ]
   },

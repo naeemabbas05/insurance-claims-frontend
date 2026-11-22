@@ -1,9 +1,11 @@
-import { Component, inject } from '@angular/core';
-import { NonNullableFormBuilder, Validators } from '@angular/forms';
+import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 import { ClaimsApiService } from '../../core/api/claims-api.service';
 import { getApiErrorMessage } from '../../core/api/api-error';
-import { ClaimSubmissionResponse, ClaimType } from '../../core/api/claims-api.models';
+import { ClaimSubmissionResponse } from '../../core/api/claims-api.models';
 import { NotificationService } from '../../Shared/feedback/notification.service';
+import { DynamicFormSchema } from '../../core/forms/form-schema.models';
+import { createClaimSubmissionSchema } from './claim-submission-schema';
 
 @Component({
   selector: 'app-claimant-submit',
@@ -12,59 +14,56 @@ import { NotificationService } from '../../Shared/feedback/notification.service'
   styleUrls: ['./claimant-submit.component.scss']
 })
 export class ClaimantSubmitComponent {
-  private readonly formBuilder = inject(NonNullableFormBuilder);
-  readonly form = this.formBuilder.group({
-    marketCode: ['', [Validators.required, Validators.maxLength(16)]],
-    policyNumber: ['', [Validators.required, Validators.maxLength(64)]],
-    claimType: ['motor' as ClaimType, Validators.required],
-    incidentAt: ['', Validators.required],
-    incidentDescription: ['', [Validators.required, Validators.maxLength(4000)]],
-    estimatedLossAmount: [0, [Validators.required, Validators.min(0.01)]],
-    currencyCode: ['', [Validators.required, Validators.maxLength(3)]],
-    claimant: this.formBuilder.group({
-      name: ['', [Validators.required, Validators.maxLength(200)]],
-      email: ['', [Validators.required, Validators.email, Validators.maxLength(320)]],
-      phone: ['', [Validators.required, Validators.maxLength(32)]]
-    })
-  });
+  readonly formSchema: DynamicFormSchema = createClaimSubmissionSchema();
   loading = false;
   errorMessage: string | null = null;
   submission: ClaimSubmissionResponse | null = null;
 
   constructor(
     private readonly claimsApi: ClaimsApiService,
-    private readonly notifications: NotificationService
+    private readonly notifications: NotificationService,
+    private readonly router: Router
   ) {}
 
-  submit(): void {
+  get isSharedClaimsFormRoute(): boolean {
+    return this.router.url.startsWith('/form-builder');
+  }
+
+  submit(values: Record<string, unknown>): void {
     this.errorMessage = null;
     this.submission = null;
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
+    const incidentAt = this.stringValue(values, 'incidentAt');
+    const incidentTimestamp = Date.parse(incidentAt);
+    if (!incidentAt || Number.isNaN(incidentTimestamp)) {
+      this.errorMessage = 'Enter a valid incident date and time.';
       return;
     }
 
-    const value = this.form.getRawValue();
-    const incidentTimestamp = Date.parse(value.incidentAt);
-    if (Number.isNaN(incidentTimestamp)) {
-      this.errorMessage = 'Enter a valid incident date and time.';
+    const claimType = values['claimType'];
+    const estimatedLossAmount = values['estimatedLossAmount'];
+    if (
+      (claimType !== 'motor' && claimType !== 'property') ||
+      typeof estimatedLossAmount !== 'number' ||
+      !Number.isFinite(estimatedLossAmount)
+    ) {
+      this.errorMessage = 'The claim form contains invalid values. Review the fields and try again.';
       return;
     }
 
     this.loading = true;
     this.claimsApi.submit({
-      marketCode: value.marketCode.trim(),
-      policyNumber: value.policyNumber.trim(),
-      claimType: value.claimType,
+      marketCode: this.stringValue(values, 'marketCode'),
+      policyNumber: this.stringValue(values, 'policyNumber'),
+      claimType,
       incidentAtUtc: new Date(incidentTimestamp).toISOString(),
-      incidentDescription: value.incidentDescription.trim(),
+      incidentDescription: this.stringValue(values, 'incidentDescription'),
       claimant: {
-        name: value.claimant.name.trim(),
-        email: value.claimant.email.trim(),
-        phone: value.claimant.phone.trim()
+        name: this.stringValue(values, 'claimantName'),
+        email: this.stringValue(values, 'claimantEmail'),
+        phone: this.stringValue(values, 'claimantPhone')
       },
-      estimatedLossAmount: value.estimatedLossAmount,
-      currencyCode: value.currencyCode.trim().toUpperCase()
+      estimatedLossAmount,
+      currencyCode: this.stringValue(values, 'currencyCode').toUpperCase()
     }, this.createIdempotencyKey()).subscribe({
       next: (response) => {
         this.submission = response;
@@ -80,5 +79,10 @@ export class ClaimantSubmitComponent {
 
   private createIdempotencyKey(): string {
     return `claim-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  }
+
+  private stringValue(values: Record<string, unknown>, key: string): string {
+    const value = values[key];
+    return typeof value === 'string' ? value.trim() : '';
   }
 }

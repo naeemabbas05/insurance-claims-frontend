@@ -37,8 +37,11 @@ The production build uses the current Angular application builder. Some first-pa
 - `/officer/claims/:id`
 - `/management/dashboard`
 - `/management/reports`
+- `/form-builder` (render-only claim form)
 
-Existing user management routes (`/`, `/add`, and `/edit/:id`) remain available. The reusable Form Builder and Dynamic Forms modules support typed text, numeric, date, textarea, select, and multi-select fields.
+Existing user management routes (`/`, `/add`, and `/edit/:id`) remain available. User create/edit, claimant submission, the officer market filter, and `/form-builder` all use the shared schema-driven Dynamic Forms renderer. It supports text, textarea, number, email, date/date-time, dropdown, multi-select, radio, checkbox, toggle, file, and repeatable-group fields.
+
+`/form-builder` is a render-only claims form route; it has no schema-authoring controls. It renders the claim-submission schema and submits through the same API flow as `/claimant/submit-claim`. The schema is frontend configuration aligned with the API request DTO because the backend does not expose an endpoint to retrieve form schemas. The route's `allowedRoles` metadata documents intended access but is not an authorization guard.
 
 ## API integration
 
@@ -51,11 +54,14 @@ Existing user management routes (`/`, `/add`, and `/edit/:id`) remain available.
 
 Request/response TypeScript contracts are in `src/app/core/api`. The API’s camel-case enum JSON representation is reflected in the frontend types.
 
+No backend API currently reads or writes configurable claim form schemas. Both claim-form routes use the shared renderer and map their answers to the existing fixed `ClaimSubmissionRequest` for `POST /api/v1/claims`. There is no schema fetch, save, publish, version, or archive API, and the frontend does not emulate one.
+
 ## Integration gaps
 
 - The supplied Angular project did not contain authentication, JWT storage/handling, role or permission models, guards, or HTTP interceptors. This foundation does not add a competing authentication system. API endpoints still require the existing backend’s JWT and role claims; the frontend must be connected to the owning authentication implementation before protected requests can succeed. Route `allowedRoles` metadata documents intended access only and is not an authorization guard.
 - The backend has no claimant claims-list endpoint. `/claimant/my-claims` explains this rather than fabricating records or calling a mock API. Claim submission and lookup by known reference are integrated.
+- The backend has no form schema create/read/update/delete, draft/publish/archive, version association, or dynamic-answer submission endpoints. File-upload integration is also unavailable. The frontend therefore renders its current API-aligned schema and submits only the fixed claim DTO; custom schemas cannot be fetched from or persisted to the backend.
 - The legacy user and skill-set services are retained, but their `/api/User` and `/api/SkillSet` endpoints are not provided by the claims backend.
-- The backend Swagger document was not available as a running service during this work; endpoint and DTO contracts were checked against its ASP.NET controller attributes and request/response types. Start the API in Development to view the generated OpenAPI document.
+- The backend Swagger UI is available at `http://localhost:5187/swagger/index.html` when the API is running in Development. The frontend development proxy forwards `/api` requests to `http://localhost:5187`.
 
 See [DEVELOPMENT_JOURNAL.md](./DEVELOPMENT_JOURNAL.md) for implementation and verification notes.
