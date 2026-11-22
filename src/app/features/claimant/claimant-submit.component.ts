@@ -15,6 +15,11 @@ import { createClaimSubmissionSchema } from './claim-submission-schema';
 })
 export class ClaimantSubmitComponent {
   readonly formSchema: DynamicFormSchema = createClaimSubmissionSchema();
+  readonly journeySteps = ['Claim type', 'Claim details', 'Review and declaration'];
+  selectedClaimType: 'motor' | 'property' | null = null;
+  currentStep = 0;
+  claimValues: Record<string, unknown> | null = null;
+  declarationAccepted = false;
   loading = false;
   errorMessage: string | null = null;
   submission: ClaimSubmissionResponse | null = null;
@@ -27,6 +32,31 @@ export class ClaimantSubmitComponent {
 
   get isSharedClaimsFormRoute(): boolean {
     return this.router.url.startsWith('/form-builder');
+  }
+
+  selectClaimType(type: 'motor' | 'property'): void {
+    if (this.selectedClaimType !== type) {
+      this.declarationAccepted = false;
+    }
+    this.selectedClaimType = type;
+    this.currentStep = 1;
+    this.claimValues = null;
+  }
+
+  review(values: Record<string, unknown>): void {
+    this.claimValues = { ...values, claimType: this.selectedClaimType };
+    this.currentStep = 2;
+  }
+
+  editDetails(): void {
+    this.currentStep = 1;
+  }
+
+  submitReviewedClaim(): void {
+    if (!this.claimValues || !this.declarationAccepted) {
+      return;
+    }
+    this.submit(this.claimValues);
   }
 
   submit(values: Record<string, unknown>): void {
@@ -54,7 +84,7 @@ export class ClaimantSubmitComponent {
     this.claimsApi.submit({
       marketCode: this.stringValue(values, 'marketCode'),
       policyNumber: this.stringValue(values, 'policyNumber'),
-      claimType,
+      claimType: this.selectedClaimType ?? claimType,
       incidentAtUtc: new Date(incidentTimestamp).toISOString(),
       incidentDescription: this.stringValue(values, 'incidentDescription'),
       claimant: {

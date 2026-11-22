@@ -1,7 +1,7 @@
 <section class="page">
   <a *ngIf="!isSharedClaimsFormRoute" class="back-link" routerLink="/claimant/dashboard">Back to dashboard</a>
   <h1>Submit a claim</h1>
-  <p class="intro">Complete the form to submit your claim.</p>
+  <p class="intro">Follow the steps to submit your claim.</p>
 
   <app-loading [active]="loading" label="Submitting claim"></app-loading>
   <app-error-message [message]="errorMessage"></app-error-message>
@@ -11,11 +11,56 @@
     <a *ngIf="!isSharedClaimsFormRoute" [routerLink]="['/claimant/claims', result.claimReference]">View claim</a>
   </div>
 
-  <app-dynamic-form-renderer
-    *ngIf="!submission"
-    [schema]="formSchema"
-    [previewOnly]="false"
-    [submitDisabled]="loading"
-    (validSubmit)="submit($event)">
-  </app-dynamic-form-renderer>
+  <ng-container *ngIf="!submission">
+    <ol class="steps" aria-label="Claim submission steps">
+      <li *ngFor="let step of journeySteps; let index = index" [class.active]="currentStep === index" [class.complete]="currentStep > index">
+        <span>{{ index + 1 }}</span>{{ step }}
+      </li>
+    </ol>
+
+    <section *ngIf="currentStep === 0" class="step-card">
+      <h2>What type of claim are you making?</h2>
+      <div class="type-options">
+        <button type="button" class="type-option" (click)="selectClaimType('motor')">Motor claim</button>
+        <button type="button" class="type-option" (click)="selectClaimType('property')">Property claim</button>
+      </div>
+    </section>
+
+    <section *ngIf="currentStep === 1" class="step-card">
+      <h2>{{ selectedClaimType === 'motor' ? 'Motor' : 'Property' }} claim details</h2>
+      <p class="notice">
+        This form uses the fields supported by the current claim submission API. Published forms and supporting document uploads are not available from that API.
+      </p>
+      <app-dynamic-form-renderer
+        [schema]="formSchema"
+        [initialValues]="claimValues || { claimType: selectedClaimType }"
+        [previewOnly]="false"
+        [submitDisabled]="loading"
+        (validSubmit)="review($event)">
+      </app-dynamic-form-renderer>
+      <button type="button" class="btn btn-link" (click)="currentStep = 0">Change claim type</button>
+    </section>
+
+    <section *ngIf="currentStep === 2 && claimValues as values" class="step-card review-card">
+      <h2>Review your information</h2>
+      <dl>
+        <dt>Claim type</dt><dd>{{ selectedClaimType | titlecase }}</dd>
+        <dt>Market code</dt><dd>{{ values['marketCode'] }}</dd>
+        <dt>Policy number</dt><dd>{{ values['policyNumber'] }}</dd>
+        <dt>Incident date and time</dt><dd>{{ values['incidentAt'] }}</dd>
+        <dt>Estimated loss</dt><dd>{{ values['estimatedLossAmount'] }} {{ values['currencyCode'] }}</dd>
+        <dt>Incident description</dt><dd>{{ values['incidentDescription'] }}</dd>
+        <dt>Claimant</dt><dd>{{ values['claimantName'] }} · {{ values['claimantEmail'] }} · {{ values['claimantPhone'] }}</dd>
+      </dl>
+      <p class="notice">Supporting documents cannot be attached because the current backend has no upload endpoint.</p>
+      <label class="declaration">
+        <input type="checkbox" [(ngModel)]="declarationAccepted" name="declarationAccepted">
+        I confirm that the information provided is accurate and complete.
+      </label>
+      <div class="review-actions">
+        <button type="button" class="btn btn-outline-secondary" (click)="editDetails()">Edit information</button>
+        <button type="button" class="btn btn-primary" [disabled]="!declarationAccepted || loading" (click)="submitReviewedClaim()">Submit claim</button>
+      </div>
+    </section>
+  </ng-container>
 </section>

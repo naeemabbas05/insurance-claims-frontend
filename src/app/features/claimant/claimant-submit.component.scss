@@ -48,6 +48,103 @@ fieldset {
   padding: 1rem 0;
 }
 
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  list-style: none;
+  margin: 1.5rem 0;
+  padding: 0;
+}
+
+.steps li {
+  align-items: center;
+  color: #647381;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.steps li span {
+  align-items: center;
+  border: 1px solid #aab8c2;
+  border-radius: 50%;
+  display: inline-flex;
+  height: 1.8rem;
+  justify-content: center;
+  width: 1.8rem;
+}
+
+.steps li.active,
+.steps li.complete {
+  color: #17496f;
+  font-weight: 600;
+}
+
+.steps li.active span,
+.steps li.complete span {
+  background: #17496f;
+  border-color: #17496f;
+  color: white;
+}
+
+.step-card {
+  background: #fff;
+  border: 1px solid #dfe6eb;
+  border-radius: 0.6rem;
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+}
+
+.type-options,
+.review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.type-option {
+  background: #f7fafc;
+  border: 1px solid #c8d8e3;
+  border-radius: 0.5rem;
+  color: #17496f;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  min-height: 4rem;
+  padding: 1rem 1.5rem;
+}
+
+.notice {
+  background: #f3f7fa;
+  border-left: 3px solid #7393aa;
+  color: #53616e;
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+}
+
+.review-card dl {
+  display: grid;
+  gap: 0.5rem 1rem;
+  grid-template-columns: minmax(10rem, 0.4fr) 1fr;
+}
+
+.review-card dt {
+  color: #53616e;
+}
+
+.review-card dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.declaration {
+  align-items: flex-start;
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+}
+
 legend {
   float: none;
   font-size: 1.1rem;
