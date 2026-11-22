@@ -1,0 +1,27 @@
+<div class="app-shell">
+  <header class="app-header">
+    <a class="brand" routerLink="/">CHUBB <span>Claims</span></a>
+    <nav class="workspace-switcher" aria-label="Workspaces">
+      <a routerLink="/claimant/dashboard" routerLinkActive="active">Claimant</a>
+      <a routerLink="/officer/dashboard" routerLinkActive="active">Claims Officer</a>
+      <a routerLink="/management/dashboard" routerLinkActive="active">Management</a>
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Users</a>
+    </nav>
+  </header>
+
+  <div class="app-body">
+    <aside class="section-nav" aria-label="Section navigation">
+      <h2>{{ sectionLabel }}</h2>
+      <a
+        *ngFor="let link of sectionLinks"
+        [routerLink]="link.path"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: false }">
+        {{ link.label }}
+      </a>
+    </aside>
+    <main class="app-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

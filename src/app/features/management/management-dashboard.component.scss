@@ -1,0 +1,47 @@
+.page {
+  margin: 0 auto;
+  max-width: 70rem;
+  padding: 2rem 1rem;
+}
+
+.eyebrow {
+  color: #657482;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h1 {
+  color: #173c59;
+}
+
+.intro {
+  color: #53616e;
+  margin-bottom: 1.5rem;
+}
+
+.summary-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  margin-bottom: 1.5rem;
+}
+
+.summary-grid article {
+  background: #fff;
+  border: 1px solid #dfe6eb;
+  border-radius: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.25rem;
+}
+
+.summary-grid span {
+  color: #647381;
+}
+
+.summary-grid strong {
+  color: #173c59;
+  font-size: 1.6rem;
+}

@@ -1,0 +1,31 @@
+.page {
+  margin: 0 auto;
+  max-width: 70rem;
+  padding: 2rem 1rem;
+}
+
+.back-link {
+  color: #17496f;
+  display: inline-block;
+  margin-bottom: 1.25rem;
+  text-decoration: none;
+}
+
+h1,
+h2 {
+  color: #173c59;
+}
+
+.notice {
+  background: #fff;
+  border: 1px solid #dfe6eb;
+  border-radius: 0.6rem;
+  margin-top: 1.5rem;
+  max-width: 48rem;
+  padding: 1.5rem;
+}
+
+.notice p {
+  color: #53616e;
+  line-height: 1.6;
+}

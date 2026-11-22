@@ -1,0 +1,10 @@
+<div
+  *ngIf="notification$ | async as notification"
+  class="toast-message"
+  [class.toast-success]="notification.kind === 'success'"
+  [class.toast-info]="notification.kind === 'info'"
+  role="status"
+  aria-live="polite">
+  <span>{{ notification.message }}</span>
+  <button type="button" class="btn-close" aria-label="Dismiss notification" (click)="dismiss()"></button>
+</div>

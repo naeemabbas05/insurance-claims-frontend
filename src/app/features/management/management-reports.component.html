@@ -1,0 +1,51 @@
+<section class="page">
+  <a class="back-link" routerLink="/management/dashboard">Back to dashboard</a>
+  <h1>Claims reports</h1>
+  <app-loading [active]="loading" label="Loading reports"></app-loading>
+  <app-error-message [message]="errorMessage"></app-error-message>
+
+  <ng-container *ngIf="claims as claimReport">
+    <section class="report-panel">
+      <h2>Claims summary</h2>
+      <p>{{ claimReport.totalClaims }} claims · {{ claimReport.unassignedClaims }} unassigned</p>
+      <ul class="metric-list">
+        <li *ngFor="let item of claimReport.claimsByStatus">
+          <span>{{ item.status }}</span><strong>{{ item.count }}</strong>
+        </li>
+      </ul>
+    </section>
+  </ng-container>
+
+  <div class="report-grid">
+    <section class="report-panel" *ngIf="aging as agingReport">
+      <h2>Claim aging</h2>
+      <p>{{ agingReport.totalOpenClaims }} open claims</p>
+      <ul class="metric-list">
+        <li *ngFor="let item of agingReport.aging">
+          <span>{{ item.bucket }}</span><strong>{{ item.count }}</strong>
+        </li>
+      </ul>
+    </section>
+
+    <section class="report-panel" *ngIf="performance as performanceReport">
+      <h2>Performance</h2>
+      <ul class="metric-list">
+        <li><span>Completed claims</span><strong>{{ performanceReport.completedClaims }}</strong></li>
+        <li><span>Pending claims</span><strong>{{ performanceReport.claimsPending }}</strong></li>
+        <li><span>Average turnaround</span><strong>{{ performanceReport.averageTurnaroundDays | number:'1.0-1' }} days</strong></li>
+        <li><span>SLA attainment</span><strong>{{ performanceReport.slaAttainmentPercentage | number:'1.0-1' }}%</strong></li>
+      </ul>
+    </section>
+
+    <section class="report-panel" *ngIf="sla as slaReport">
+      <h2>SLA</h2>
+      <p>Target: {{ slaReport.targetDays }} days</p>
+      <ul class="metric-list">
+        <li><span>Eligible</span><strong>{{ slaReport.eligibleClaims }}</strong></li>
+        <li><span>Achieved</span><strong>{{ slaReport.achievedClaims }}</strong></li>
+        <li><span>Breached</span><strong>{{ slaReport.breachedClaims }}</strong></li>
+        <li><span>Attainment</span><strong>{{ slaReport.attainmentPercentage | number:'1.0-1' }}%</strong></li>
+      </ul>
+    </section>
+  </div>
+</section>

@@ -1,0 +1,34 @@
+<section class="page">
+  <a class="back-link" routerLink="../">Back to claims</a>
+  <h1>Claim details</h1>
+  <app-loading [active]="loading"></app-loading>
+  <app-error-message [message]="errorMessage"></app-error-message>
+
+  <ng-container *ngIf="tracking as claim">
+    <div class="summary-card">
+      <div>
+        <p class="eyebrow">Claim reference</p>
+        <strong>{{ claim.claimReference }}</strong>
+      </div>
+      <div>
+        <p class="eyebrow">Current status</p>
+        <span class="status">{{ claim.status }}</span>
+      </div>
+      <div>
+        <p class="eyebrow">Submitted</p>
+        <span>{{ claim.submittedAtUtc | date:'medium' }}</span>
+      </div>
+    </div>
+
+    <section class="history">
+      <h2>Status history</h2>
+      <p *ngIf="history.length === 0" class="empty-state">No status changes are available.</p>
+      <ol *ngIf="history.length > 0">
+        <li *ngFor="let event of history">
+          <strong>{{ event.newStatus }}</strong>
+          <span>{{ event.changedAtUtc | date:'medium' }}</span>
+        </li>
+      </ol>
+    </section>
+  </ng-container>
+</section>

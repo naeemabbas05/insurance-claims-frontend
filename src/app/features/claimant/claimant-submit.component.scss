@@ -1,0 +1,56 @@
+.page {
+  margin: 0 auto;
+  max-width: 70rem;
+  padding: 2rem 1rem;
+}
+
+.back-link {
+  color: #17496f;
+  display: inline-block;
+  margin-bottom: 1.25rem;
+  text-decoration: none;
+}
+
+h1,
+legend {
+  color: #173c59;
+}
+
+.intro {
+  color: #53616e;
+  margin-bottom: 1.5rem;
+}
+
+.form-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+
+label {
+  display: block;
+  font-weight: 600;
+}
+
+label .form-control,
+label .form-select {
+  font-weight: 400;
+  margin-top: 0.4rem;
+}
+
+.block-field {
+  margin: 1rem 0;
+}
+
+fieldset {
+  border-top: 1px solid #dfe6eb;
+  margin: 1.5rem 0;
+  padding: 1rem 0;
+}
+
+legend {
+  float: none;
+  font-size: 1.1rem;
+  font-weight: 600;
+  width: auto;
+}

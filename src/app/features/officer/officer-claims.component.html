@@ -1,0 +1,42 @@
+<section class="page">
+  <p class="eyebrow">Claims officer workspace</p>
+  <h1>Incoming claims</h1>
+  <p class="intro">Choose a market to view claims assigned to your staff account.</p>
+
+  <form class="market-filter" (ngSubmit)="loadClaims()">
+    <label for="marketCode">Market code</label>
+    <input id="marketCode" name="marketCode" class="form-control" [(ngModel)]="marketCode" required>
+    <button class="btn btn-primary" type="submit" [disabled]="loading">Load claims</button>
+  </form>
+
+  <app-loading [active]="loading"></app-loading>
+  <app-error-message [message]="errorMessage"></app-error-message>
+
+  <div class="table-wrap" *ngIf="claims.length > 0">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Reference</th>
+          <th>Policy</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Incident</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let claim of claims">
+          <td>{{ claim.claimReference }}</td>
+          <td>{{ claim.policyNumber }}</td>
+          <td>{{ claim.claimType }}</td>
+          <td>{{ claim.status }}</td>
+          <td>{{ claim.incidentAtUtc | date:'mediumDate' }}</td>
+          <td><a [routerLink]="['/officer/claims', claim.claimReference]">View</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p *ngIf="!loading && !errorMessage && claims.length === 0" class="empty-state">
+    Enter a market code to load claims.
+  </p>
+</section>

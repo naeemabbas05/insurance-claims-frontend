@@ -1,0 +1,53 @@
+.page {
+  margin: 0 auto;
+  max-width: 70rem;
+  padding: 2rem 1rem;
+}
+
+.back-link {
+  color: #17496f;
+  display: inline-block;
+  margin-bottom: 1.25rem;
+  text-decoration: none;
+}
+
+h1,
+h2 {
+  color: #173c59;
+}
+
+.report-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+}
+
+.report-panel {
+  background: #fff;
+  border: 1px solid #dfe6eb;
+  border-radius: 0.6rem;
+  margin: 1rem 0;
+  padding: 1.25rem;
+}
+
+.metric-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.metric-list li {
+  border-top: 1px solid #e8edf1;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.65rem 0;
+}
+
+.metric-list li:first-child {
+  border-top: 0;
+}
+
+.metric-list span {
+  color: #53616e;
+  text-transform: capitalize;
+}

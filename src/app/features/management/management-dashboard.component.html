@@ -1,0 +1,17 @@
+<section class="page">
+  <p class="eyebrow">Management workspace</p>
+  <h1>Claims overview</h1>
+  <p class="intro">Current claims volume and exposure from the management reporting API.</p>
+
+  <app-loading [active]="loading"></app-loading>
+  <app-error-message [message]="errorMessage"></app-error-message>
+
+  <div *ngIf="report as summary" class="summary-grid">
+    <article><span>Total claims</span><strong>{{ summary.totalClaims }}</strong></article>
+    <article><span>Unassigned</span><strong>{{ summary.unassignedClaims }}</strong></article>
+    <article><span>Markets covered</span><strong>{{ summary.claimsByMarket.length }}</strong></article>
+    <article><span>Active officers</span><strong>{{ summary.workloadByOfficer.length }}</strong></article>
+  </div>
+
+  <a class="btn btn-outline-primary" routerLink="/management/reports">View reports</a>
+</section>

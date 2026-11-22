@@ -1,0 +1,21 @@
+.toast-message {
+  align-items: center;
+  border-radius: 0.4rem;
+  box-shadow: 0 0.35rem 1rem rgba(20, 35, 50, 0.12);
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin: 1rem auto;
+  max-width: 70rem;
+  padding: 0.85rem 1rem;
+}
+
+.toast-success {
+  background: #e7f5ed;
+  color: #175c35;
+}
+
+.toast-info {
+  background: #eaf3fb;
+  color: #17496f;
+}
