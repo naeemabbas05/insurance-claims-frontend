@@ -1,7 +1,20 @@
+<section class="page">
+  <a class="back-link" routerLink="/">Back to users</a>
+  <p class="eyebrow">User administration</p>
+  <h1>{{ isEdit ? 'Edit user' : 'Add user' }}</h1>
 
-<div class="card mt-2">
-    <app-form-builder [title]="userId ? 'Edit User': 'Add User'" [meta]="userMeta" [mappingModel]="userModel"></app-form-builder>
-    <div class="col mb-2 mt-2">
-        <app-button (click)="submit()" name="Submit" classes="btn btn-primary float-end mx-2"></app-button>
-    </div>
-</div>
+  <app-loading
+    [active]="(!ready && !userLoadFailed) || saving"
+    [label]="saving ? 'Saving user' : 'Loading user form'">
+  </app-loading>
+  <app-error-message [message]="errorMessage"></app-error-message>
+
+  <app-dynamic-form-renderer
+    *ngIf="ready"
+    [schema]="formSchema"
+    [initialValues]="initialValues"
+    [previewOnly]="false"
+    [submitDisabled]="saving || skillSetLoadFailed"
+    (validSubmit)="submit($event)">
+  </app-dynamic-form-renderer>
+</section>

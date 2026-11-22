@@ -9,10 +9,8 @@ import { AddComponent } from './user/add/add.component';
 import { TableComponent } from './Shared/table/table.component';
 import { ButtonComponent } from './Shared/button/button.component';
 import { HttpClientModule } from '@angular/common/http';
-import { FormsModule } from '@angular/forms';
-import { FormBuilderModule } from './Shared/form-builder/form-builder.module';
 import { FeedbackModule } from './Shared/feedback/feedback.module';
-import { InputComponent } from './Shared/input/input.component';
+import { DynamicFormsModule } from './features/dynamic-forms/dynamic-forms.module';
 
 @NgModule({
   declarations: [
@@ -21,15 +19,13 @@ import { InputComponent } from './Shared/input/input.component';
     TableComponent,
     ButtonComponent,
     UserComponent,
-    AddComponent,
-    InputComponent
+    AddComponent
   ],
   imports: [
     BrowserModule,
-    FormsModule,
     AppRoutingModule,
     HttpClientModule,
-    FormBuilderModule,
+    DynamicFormsModule,
     FeedbackModule
   ],
   providers: [],

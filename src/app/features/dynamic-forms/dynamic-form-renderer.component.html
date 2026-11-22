@@ -1,0 +1,172 @@
+<ng-container *ngIf="schema as formSchema">
+  <div *ngIf="previewOnly" class="preview-notice">
+    Preview mode — field validation and conditional visibility are active. Drafts, publication, file uploads,
+    and claim submission are not connected to the current backend.
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <header class="form-heading">
+      <p *ngIf="formSchema.category && formSchema.marketCode" class="form-category">
+        {{ formSchema.category }} · {{ formSchema.marketCode }}
+      </p>
+      <h2>{{ formSchema.title }}</h2>
+      <p *ngIf="formSchema.description">{{ formSchema.description }}</p>
+    </header>
+
+    <section class="form-section" *ngFor="let section of formSchema.sections">
+      <h3>{{ section.title }}</h3>
+      <p *ngIf="section.description" class="section-description">{{ section.description }}</p>
+
+      <ng-container *ngFor="let field of section.fields">
+        <fieldset
+          *ngIf="field.type === 'repeatable-group' && isVisible(field)"
+          class="repeatable-field"
+          [formArrayName]="field.key">
+          <legend>{{ field.label }}<span *ngIf="field.required"> *</span></legend>
+          <p *ngIf="field.helpText" class="help-text">{{ field.helpText }}</p>
+
+          <div
+            *ngFor="let row of repeatableArray(field)?.controls; let rowIndex = index"
+            class="repeatable-row">
+            <div [formGroupName]="rowIndex" class="repeatable-row-content">
+              <ng-container *ngFor="let child of field.children">
+                <ng-container *ngIf="isVisible(child, row)">
+                  <label class="form-field" *ngIf="child.type === 'text' || child.type === 'email' || child.type === 'number' || child.type === 'date' || child.type === 'datetime'">
+                    <span>{{ child.label }}<span *ngIf="child.required"> *</span></span>
+                    <input
+                      class="form-control"
+                      [type]="child.type === 'datetime' ? 'datetime-local' : child.type"
+                      [formControlName]="child.key"
+                      [placeholder]="child.placeholder || ''">
+                    <small *ngIf="child.helpText" class="help-text">{{ child.helpText }}</small>
+                    <small *ngIf="validationMessage(child, row)" class="field-error">
+                      {{ validationMessage(child, row) }}
+                    </small>
+                  </label>
+
+                  <label class="form-field" *ngIf="child.type === 'textarea'">
+                    <span>{{ child.label }}<span *ngIf="child.required"> *</span></span>
+                    <textarea
+                      class="form-control"
+                      rows="3"
+                      [formControlName]="child.key"
+                      [placeholder]="child.placeholder || ''"></textarea>
+                    <small *ngIf="child.helpText" class="help-text">{{ child.helpText }}</small>
+                    <small *ngIf="validationMessage(child, row)" class="field-error">
+                      {{ validationMessage(child, row) }}
+                    </small>
+                  </label>
+                </ng-container>
+              </ng-container>
+            </div>
+            <button
+              *ngIf="!previewOnly"
+              type="button"
+              class="btn btn-link remove-row"
+              (click)="removeRepeatableItem(field, rowIndex)">
+              Remove item
+            </button>
+          </div>
+
+          <button *ngIf="!previewOnly" type="button" class="btn btn-outline-secondary" (click)="addRepeatableItem(field)">
+            Add {{ field.label | lowercase }}
+          </button>
+          <small *ngIf="validationMessage(field)" class="field-error">{{ validationMessage(field) }}</small>
+        </fieldset>
+
+        <ng-container *ngIf="field.type !== 'repeatable-group' && isVisible(field)">
+          <label
+            class="form-field"
+            *ngIf="field.type === 'text' || field.type === 'email' || field.type === 'number' || field.type === 'date' || field.type === 'datetime'">
+            <span>{{ field.label }}<span *ngIf="field.required"> *</span></span>
+            <input
+              class="form-control"
+              [type]="field.type === 'datetime' ? 'datetime-local' : field.type"
+              [formControlName]="field.key"
+              [placeholder]="field.placeholder || ''"
+              [attr.min]="field.type === 'number' ? field.minValue : null"
+              [attr.max]="field.type === 'number' ? field.maxValue : null"
+              [attr.minlength]="field.minLength"
+              [attr.maxlength]="field.maxLength">
+            <small *ngIf="field.helpText" class="help-text">{{ field.helpText }}</small>
+            <small *ngIf="validationMessage(field)" class="field-error">{{ validationMessage(field) }}</small>
+          </label>
+
+          <label class="form-field" *ngIf="field.type === 'textarea'">
+            <span>{{ field.label }}<span *ngIf="field.required"> *</span></span>
+            <textarea
+              class="form-control"
+              rows="4"
+              [formControlName]="field.key"
+              [placeholder]="field.placeholder || ''"
+              [attr.minlength]="field.minLength"
+              [attr.maxlength]="field.maxLength"></textarea>
+            <small *ngIf="field.helpText" class="help-text">{{ field.helpText }}</small>
+            <small *ngIf="validationMessage(field)" class="field-error">{{ validationMessage(field) }}</small>
+          </label>
+
+          <label class="form-field" *ngIf="field.type === 'dropdown'">
+            <span>{{ field.label }}<span *ngIf="field.required"> *</span></span>
+            <select class="form-select" [formControlName]="field.key">
+              <option value="">Select an option</option>
+              <option *ngFor="let option of field.options" [value]="option.value">{{ option.label }}</option>
+            </select>
+            <small *ngIf="field.helpText" class="help-text">{{ field.helpText }}</small>
+            <small *ngIf="validationMessage(field)" class="field-error">{{ validationMessage(field) }}</small>
+          </label>
+
+          <label class="form-field" *ngIf="field.type === 'multiselect'">
+            <span>{{ field.label }}<span *ngIf="field.required"> *</span></span>
+            <select class="form-select" multiple [formControlName]="field.key">
+              <option *ngFor="let option of field.options" [value]="option.value">{{ option.label }}</option>
+            </select>
+            <small *ngIf="field.helpText" class="help-text">{{ field.helpText }}</small>
+            <small *ngIf="validationMessage(field)" class="field-error">{{ validationMessage(field) }}</small>
+          </label>
+
+          <fieldset class="choice-field" *ngIf="field.type === 'radio'">
+            <legend>{{ field.label }}<span *ngIf="field.required"> *</span></legend>
+            <label *ngFor="let option of field.options" class="choice-option">
+              <input type="radio" [formControlName]="field.key" [value]="option.value">
+              <span>{{ option.label }}</span>
+            </label>
+            <small *ngIf="field.helpText" class="help-text">{{ field.helpText }}</small>
+            <small *ngIf="validationMessage(field)" class="field-error">{{ validationMessage(field) }}</small>
+          </fieldset>
+
+          <label class="choice-option" *ngIf="field.type === 'checkbox'">
+            <input type="checkbox" [formControlName]="field.key">
+            <span>{{ field.label }}<span *ngIf="field.required"> *</span></span>
+            <small *ngIf="validationMessage(field)" class="field-error">{{ validationMessage(field) }}</small>
+          </label>
+
+          <label class="toggle-field" *ngIf="field.type === 'toggle'">
+            <input type="checkbox" role="switch" [formControlName]="field.key">
+            <span>{{ field.label }}<span *ngIf="field.required"> *</span></span>
+            <small *ngIf="validationMessage(field)" class="field-error">{{ validationMessage(field) }}</small>
+          </label>
+
+          <label class="form-field" *ngIf="field.type === 'file'">
+            <span>{{ field.label }}<span *ngIf="field.required"> *</span></span>
+            <input
+              class="form-control"
+              type="file"
+              [accept]="field.accept?.join(',')"
+              [multiple]="!!field.multiple"
+              (change)="onFileSelected(field, $event)">
+            <small *ngIf="field.helpText" class="help-text">{{ field.helpText }}</small>
+            <small *ngIf="field.accept?.length" class="help-text">
+              Allowed: {{ field.accept.join(', ') }} · Maximum {{ field.maxFileSizeMb }} MB per file
+            </small>
+            <small *ngIf="validationMessage(field)" class="field-error">{{ validationMessage(field) }}</small>
+          </label>
+        </ng-container>
+      </ng-container>
+    </section>
+
+    <p *ngIf="submitMessage" class="submit-message" role="status">{{ submitMessage }}</p>
+    <button *ngIf="!previewOnly" class="btn btn-primary" type="submit" [disabled]="submitDisabled">
+      {{ formSchema.submitLabel || 'Submit form' }}
+    </button>
+  </form>
+</ng-container>
