@@ -12,7 +12,7 @@
       </div>
       <div>
         <p class="eyebrow">Current status</p>
-        <span class="status">{{ claim.status }}</span>
+        <span class="status">{{ claim.status | titlecase }}</span>
       </div>
       <div>
         <p class="eyebrow">Submitted</p>
@@ -20,12 +20,53 @@
       </div>
     </div>
 
+    <p class="data-limit">
+      Policy details, incident fields, and supporting documents are not returned by the current claim tracking API.
+    </p>
+
+    <section *ngIf="decision?.decision" class="decision">
+      <h2>Decision</h2>
+      <p><strong>{{ decision?.decision?.decisionType | titlecase }}</strong> · {{ decision?.decision?.decisionDate | date:'mediumDate' }}</p>
+      <p *ngIf="decision?.decision?.reason">{{ decision?.decision?.reason }}</p>
+      <p *ngIf="decision?.decision?.approvedAmount !== null && decision?.decision?.approvedAmount !== undefined">
+        Approved amount: {{ decision?.decision?.approvedAmount }} {{ decision?.decision?.currency }}
+      </p>
+      <p *ngIf="decision?.decision?.settlementStatus">Settlement: {{ decision?.decision?.settlementStatus }}</p>
+    </section>
+
+    <section class="information-requests">
+      <h2>Additional information requests</h2>
+      <app-error-message [message]="informationError"></app-error-message>
+      <p *ngIf="!informationError && informationRequests.length === 0" class="empty-state">
+        There are no additional information requests.
+      </p>
+      <article *ngFor="let request of informationRequests" class="request-card">
+        <p class="eyebrow">Requested {{ request.requestedAtUtc | date:'medium' }} · Due {{ request.dueAtUtc | date:'mediumDate' }}</p>
+        <p>{{ request.question }}</p>
+        <p class="request-status">Status: {{ request.status | titlecase }}</p>
+        <p *ngIf="request.response"><strong>Your response:</strong> {{ request.response }}</p>
+        <form *ngIf="isClaimantView && request.status === 'open'" (ngSubmit)="respond(request)">
+          <label [for]="'response-' + request.requestId">Your response</label>
+          <textarea
+            class="form-control"
+            [id]="'response-' + request.requestId"
+            [name]="'response-' + request.requestId"
+            [(ngModel)]="responses[request.requestId]"
+            required
+            rows="3"></textarea>
+          <button class="btn btn-primary" type="submit" [disabled]="respondingId === request.requestId || !responses[request.requestId]?.trim()">
+            {{ respondingId === request.requestId ? 'Submitting…' : 'Submit response' }}
+          </button>
+        </form>
+      </article>
+    </section>
+
     <section class="history">
       <h2>Status history</h2>
       <p *ngIf="history.length === 0" class="empty-state">No status changes are available.</p>
       <ol *ngIf="history.length > 0">
         <li *ngFor="let event of history">
-          <strong>{{ event.newStatus }}</strong>
+          <strong>{{ event.previousStatus ? (event.previousStatus | titlecase) + ' → ' : '' }}{{ event.newStatus | titlecase }}</strong>
           <span>{{ event.changedAtUtc | date:'medium' }}</span>
         </li>
       </ol>

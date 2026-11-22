@@ -1,12 +1,36 @@
 <section class="page">
   <a class="back-link" routerLink="/claimant/dashboard">Back to dashboard</a>
   <h1>My claims</h1>
-  <div class="notice">
-    <h2>Claim listing is not available yet</h2>
-    <p>
-      The current claims API supports submitting a claim and retrieving a claim by reference,
-      but does not expose a claimant claims-list endpoint. No sample claims are shown.
-    </p>
-    <a class="btn btn-primary" routerLink="/claimant/submit-claim">Submit a claim</a>
-  </div>
+  <p class="intro">Look up a claim using its reference.</p>
+
+  <form class="lookup" (ngSubmit)="search()">
+    <label for="claim-reference">Claim reference</label>
+    <div class="lookup-row">
+      <input id="claim-reference" class="form-control" name="reference" [(ngModel)]="reference" required>
+      <button class="btn btn-primary" type="submit" [disabled]="loading">Search</button>
+    </div>
+  </form>
+
+  <app-loading [active]="loading" label="Looking up claim"></app-loading>
+  <app-error-message [message]="errorMessage"></app-error-message>
+
+  <article *ngIf="claim as result" class="claim-result">
+    <div>
+      <span class="eyebrow">Reference</span>
+      <strong>{{ result.claimReference }}</strong>
+    </div>
+    <div>
+      <span class="eyebrow">Submitted</span>
+      <span>{{ result.submittedAtUtc | date:'mediumDate' }}</span>
+    </div>
+    <div>
+      <span class="eyebrow">Status</span>
+      <span class="status">{{ result.status }}</span>
+    </div>
+    <a class="btn btn-outline-primary" [routerLink]="['/claimant/claims', result.claimReference]">View details</a>
+  </article>
+
+  <p class="notice">
+    The current API can look up an individual claim by reference. It does not provide a claimant claims list, so category and status filters, sorting, pagination, dashboard totals, and recent claim rows are not available.
+  </p>
 </section>

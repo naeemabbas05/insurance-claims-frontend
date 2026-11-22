@@ -29,3 +29,60 @@ h2 {
   color: #53616e;
   line-height: 1.6;
 }
+
+.intro {
+  color: #53616e;
+}
+
+.lookup {
+  background: #fff;
+  border: 1px solid #dfe6eb;
+  border-radius: 0.6rem;
+  margin: 1.25rem 0;
+  max-width: 44rem;
+  padding: 1.25rem;
+}
+
+.lookup label,
+.eyebrow {
+  color: #53616e;
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 0.4rem;
+}
+
+.lookup-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.claim-result {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #dfe6eb;
+  border-radius: 0.6rem;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  margin: 1rem 0;
+  padding: 1.25rem;
+}
+
+.claim-result > div > strong,
+.claim-result > div > span:not(.eyebrow) {
+  display: block;
+}
+
+.status {
+  color: #17496f;
+  text-transform: capitalize;
+}
+
+.notice {
+  background: #f3f7fa;
+  color: #53616e;
+  line-height: 1.6;
+  margin-top: 1.5rem;
+  max-width: 52rem;
+  padding: 1rem;
+}

@@ -96,3 +96,25 @@
 - The route declares Claimant, Claims Officer, and Manager roles; role metadata remains descriptive because no authorization guard is present in the supplied frontend.
 - The supplied Swagger URL is reachable. Its contract confirms `POST /api/v1/claims`, the existing `ClaimSubmissionRequest` body, `Idempotency-Key` header, and `ClaimSubmissionResponse`.
 - `GET /api/v1/status` returned `running` both directly and through the frontend `/api` proxy. No claim was submitted during verification to avoid creating a test record.
+
+## Ticket 3 — Claimant submission and tracking
+
+### Contract review
+
+- Reused the existing claims API DTOs and clients. Available claimant operations are `POST /api/v1/claims`, `GET /api/v1/claims/{claimReference}`, `GET /api/v1/claims/{claimReference}/history`, `GET /api/v1/claims/{claimReference}/decision`, `GET /api/v1/claims/{claimReference}/information-requests`, and `POST /api/v1/claims/{claimReference}/information-requests/{requestId}/responses`.
+- The existing notifications operations are `GET /api/v1/claimant/notifications` and `PUT /api/v1/claimant/notifications/{notificationId}/read`.
+- The backend contract has no claimant claims-list, published-form read, upload, or document attachment endpoint. Claim submission only accepts the fixed `ClaimSubmissionRequest`; tracking returns only reference, status, and submitted time. The live API was unavailable during initial inspection but responded during final verification: `GET /api/v1/status` returned `running`, and live Swagger confirmed these contract details. Its status enum is `submitted`, `underReview`, `awaitingInformation`, `assessmentInProgress`, `approved`, `declined`, `settled`, and `closed`.
+- No frontend authentication service, token handler, guard, or permission model is present in this checkout. Existing route role metadata is descriptive; API authorization remains the backend's responsibility.
+
+### Changes
+
+- Reworked claimant submission into claim-type selection, the shared Dynamic Form Renderer, review, declaration acceptance, and API submission. The selected Motor or Property value is sent through the existing fixed DTO and successful submissions show the generated reference.
+- Added a reference lookup to My Claims using the existing tracking endpoint. Dashboard totals, recent-claim rows, category/status filters, sort, and pagination remain explicitly unavailable without a claimant list endpoint; no local or sample claim records are created.
+- Expanded shared claim details with backend status history, decision details, information-request viewing, and claimant text responses. Existing backend permissions govern these requests. Policy/incident fields and attached files are not returned by tracking.
+- Documented in the submission flow that published schemas and document uploads cannot be loaded or persisted without corresponding API operations. No mock upload, schema source, or claim data was added.
+
+### Verification
+
+- `npm.cmd run build` succeeds. The initial bundle is 768.73 kB, above the existing 500 kB warning budget and below the 1 MB error budget.
+- Live contract verification succeeded against `http://localhost:5187`. No claimant login, submission, or persistence verification was performed because this frontend contains no claimant authentication/token integration and no claimant credentials were supplied. The acceptance test remains incomplete pending that access.
+- Ticket 4 has not been started.

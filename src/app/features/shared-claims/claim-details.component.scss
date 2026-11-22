@@ -48,6 +48,50 @@ h2 {
   padding-left: 1.25rem;
 }
 
+.data-limit,
+.request-card,
+.decision {
+  background: #fff;
+  border: 1px solid #dfe6eb;
+  border-radius: 0.6rem;
+  margin: 1rem 0;
+  padding: 1rem 1.25rem;
+}
+
+.data-limit {
+  background: #f3f7fa;
+  color: #53616e;
+}
+
+.decision h2,
+.information-requests h2 {
+  margin-top: 2rem;
+}
+
+.request-card .eyebrow {
+  color: #647381;
+  font-size: 0.8rem;
+}
+
+.request-card form {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 44rem;
+}
+
+.request-card form label {
+  font-weight: 600;
+}
+
+.request-card form button {
+  justify-self: start;
+}
+
+.request-status {
+  color: #53616e;
+  font-size: 0.9rem;
+}
+
 .history li {
   display: flex;
   flex-direction: column;

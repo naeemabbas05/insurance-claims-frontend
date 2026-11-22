@@ -43,6 +43,8 @@ Existing user management routes (`/`, `/add`, and `/edit/:id`) remain available.
 
 `/form-builder` is a render-only claims form route; it has no schema-authoring controls. It renders the claim-submission schema and submits through the same API flow as `/claimant/submit-claim`. The schema is frontend configuration aligned with the API request DTO because the backend does not expose an endpoint to retrieve form schemas. The route's `allowedRoles` metadata documents intended access but is not an authorization guard.
 
+Claimant submission now guides the user through claim type selection, the shared dynamic form, review, declaration, and the existing claim submission endpoint. My Claims can look up a known reference, and claim details show available status history, decisions, and information requests. Published schema retrieval, document upload, and claimant-wide claim listing are not implemented because the backend has no corresponding endpoints. Dashboard totals, recent claims, and list filters therefore remain unavailable.
+
 ## API integration
 
 `src/app/core/api/api-config.ts` centralizes the versioned API base path. Typed Angular `HttpClient` services integrate these existing endpoints:
@@ -59,8 +61,8 @@ No backend API currently reads or writes configurable claim form schemas. Both c
 ## Integration gaps
 
 - The supplied Angular project did not contain authentication, JWT storage/handling, role or permission models, guards, or HTTP interceptors. This foundation does not add a competing authentication system. API endpoints still require the existing backend’s JWT and role claims; the frontend must be connected to the owning authentication implementation before protected requests can succeed. Route `allowedRoles` metadata documents intended access only and is not an authorization guard.
-- The backend has no claimant claims-list endpoint. `/claimant/my-claims` explains this rather than fabricating records or calling a mock API. Claim submission and lookup by known reference are integrated.
-- The backend has no form schema create/read/update/delete, draft/publish/archive, version association, or dynamic-answer submission endpoints. File-upload integration is also unavailable. The frontend therefore renders its current API-aligned schema and submits only the fixed claim DTO; custom schemas cannot be fetched from or persisted to the backend.
+- The backend has no claimant claims-list endpoint. My Claims supports lookup by known reference, but claimant-wide rows, dashboard counts, list filters, sorting, and pagination cannot be populated without that endpoint.
+- The backend has no form schema create/read/update/delete, draft/publish/archive, version association, or dynamic-answer submission endpoints. File-upload integration is also unavailable. The frontend renders its API-aligned schema and submits only the fixed claim DTO; custom schemas and supporting files cannot be fetched or persisted through the current API.
 - The legacy user and skill-set services are retained, but their `/api/User` and `/api/SkillSet` endpoints are not provided by the claims backend.
 - The backend Swagger UI is available at `http://localhost:5187/swagger/index.html` when the API is running in Development. The frontend development proxy forwards `/api` requests to `http://localhost:5187`.
 

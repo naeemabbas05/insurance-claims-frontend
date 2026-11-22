@@ -21,6 +21,44 @@ h2 {
   margin: 0.75rem 0 1.25rem;
 }
 
+.overview {
+  margin-bottom: 2rem;
+}
+
+.overview h3 {
+  color: #173c59;
+  margin-top: 1.5rem;
+}
+
+.unavailable {
+  color: #53616e;
+}
+
+.metric-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+}
+
+.metric-card {
+  background: #fff;
+  border: 1px solid #dfe6eb;
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+.metric-card span {
+  color: #53616e;
+}
+
+.metric-card strong {
+  color: #173c59;
+  font-size: 1.5rem;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;
